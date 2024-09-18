@@ -8,21 +8,13 @@
         /* Basic styles for the tree */
         .node {
             cursor: pointer;
-            text-align: center;
         }
         .node:hover {
             stroke: #2ecc71;
             stroke-width: 2px;
         }
-        .label {
-            font-size: 12px;
-            text-align: center;
-        }
         svg {
             font: 12px sans-serif;
-        }
-        text {
-            pointer-events: none;
         }
         .link {
             stroke: #3498db;
@@ -39,18 +31,11 @@
             background: #ecf0f1;
             padding: 5px;
             border-radius: 5px;
-        }
-        .mutation-sample {
-            font-size: 10px;
-            fill: #7f8c8d;
+            text-align: center;
         }
         .mutation-info {
-            display: inline-block;
-            margin-left: 10px;
-        }
-        .mutation-container {
-            display: flex;
-            align-items: center;
+            font-size: 10px;
+            fill: #7f8c8d;
         }
     </style>
 </head>
@@ -77,18 +62,18 @@
             });
 
             function buildTreeData(data) {
-                let tree = { name: 'j', children: [] };
+                let tree = { name: 'Root', children: [] };
                 let nodes = {};
-                nodes['j'] = tree;
+                nodes['Root'] = tree;
 
                 data.forEach(row => {
                     if (!row['mutationInfo']) return; // Skip rows without mutations
                     const mutations = row['mutationInfo'].split('>');
-                    let currentNode = nodes['j'];
+                    let currentNode = nodes['Root'];
 
                     mutations.forEach(mutation => {
                         if (!nodes[mutation]) {
-                            nodes[mutation] = { name: mutation, children: [], samples: [], age: row['ageInfo'] };
+                            nodes[mutation] = { name: mutation, children: [], samples: [] };
                             currentNode.children.push(nodes[mutation]);
                         }
                         currentNode = nodes[mutation];
@@ -134,13 +119,13 @@
 
                 node.append('rect')
                     .attr('x', -60)
-                    .attr('y', -15)
+                    .attr('y', -20)
                     .attr('width', 120)
-                    .attr('height', 30)
+                    .attr('height', 40)
                     .attr('class', 'mutation-title');
 
                 node.append('text')
-                    .attr('dy', 3)
+                    .attr('dy', 0)
                     .attr('x', 0)
                     .style('text-anchor', 'middle')
                     .attr('class', 'mutation-title')
@@ -154,7 +139,7 @@
                     .attr('height', 40)
                     .append('xhtml:div')
                     .attr('class', 'mutation-info')
-                    .html(d => d.data.samples.map(s => `<span class="mutation-sample">${s.name} (${s.location})</span>`).join('<br>'));
+                    .html(d => d.data.samples.map(s => `<div>${s.name} (${s.location})</div>`).join(''));
             }
         });
     </script>
