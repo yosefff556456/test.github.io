@@ -4,102 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مشجر التحورات الجينية</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treant-js@1.0.0/treant.min.css">
   <style>
-    /* تنسيق عام للصناديق */
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f0f0f0;
-    }
-
-    .tree-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .mutation-box {
-      border: 2px solid #333;
-      padding: 10px;
-      margin: 10px;
-      text-align: center;
-      background-color: #f9f9f9;
-      width: 200px;
-      position: relative;
-    }
-
-    .sample-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-top: 10px;
-    }
-
-    .sample {
-      background-color: #ddd;
-      padding: 5px;
-      margin: 5px;
-      border-radius: 5px;
-      font-size: 12px;
-    }
-
-    .branch-line {
-      width: 2px;
-      background-color: #333;
-      margin: 0 auto;
-      position: relative;
-    }
-
-    .branch-line::before {
-      content: '';
-      display: block;
-      width: 0;
-      height: 20px;
-      border-left: 2px solid #333;
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
+    /* تنسيقات مخصصة لجعل الشجرة تناسب العرض */
+    #tree-container {
+      width: 100%;
+      height: 600px;
     }
   </style>
 </head>
 <body>
+  <div id="tree-container"></div>
 
-  <div id="tree-container" class="tree-container"></div>
-
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.0/raphael.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.0/treant.min.js"></script>
   <script>
     // الدالة لجلب البيانات من ملف CSV
     async function fetchCSVData(url) {
       const response = await fetch(url);
       const data = await response.text();
-      const lines = data.split('\n').slice(1);
-      const parsedData = lines.map(line => {
-        const [personInfo, locationInfo, mutationInfo] = line.split(',');
-        return { personInfo, locationInfo, mutationInfo };
-      });
+      const parsedData = d3.csvParse(data);
       return parsedData;
     }
 
-    // تحويل البيانات إلى هيكل الشجرة
+    // تحويل البيانات إلى هيكل الشجرة لـ Treant.js
     function processTreeData(data) {
-      const root = { name: 'J', children: [] };
+      const nodes = [];
+      const links = [];
 
+      // إنشاء العقدة الجذرية
+      const root = { name: 'J', children: [] };
+      const nodeMap = { 'J': root };
+
+      // معالجة البيانات وإنشاء العقد والفروع
       data.forEach(({ personInfo, locationInfo, mutationInfo }) => {
-        const mutationArray = mutationInfo.split('>').map(m => m.trim());
+        const mutationArray = mutationInfo.split('>');
         let currentNode = root;
 
         mutationArray.forEach((mutation, index) => {
-          let existingNode = currentNode.children.find(child => child.name === mutation);
-          if (!existingNode) {
-            existingNode = { name: mutation, children: [] };
-            currentNode.children.push(existingNode);
+          if (!nodeMap[mutation]) {
+            nodeMap[mutation] = { name: mutation, children: [] };
+            currentNode.children.push(nodeMap[mutation]);
           }
-          currentNode = existingNode;
+          currentNode = nodeMap[mutation];
           if (index === mutationArray.length - 1) {
             if (!currentNode.samples) currentNode.samples = [];
             currentNode.samples.push({ name: personInfo, location: locationInfo });
@@ -107,57 +55,29 @@
         });
       });
 
-      return root;
+      function convertToTreantFormat(node) {
+        const treantNode = { text: { name: node.name }, children: [] };
+        if (node.samples) {
+          treantNode.text.name += `<br>${node.samples.map(s => `${s.name} (${s.location})`).join('<br>')}`;
+        }
+        node.children.forEach(child => treantNode.children.push(convertToTreantFormat(child)));
+        return treantNode;
+      }
+
+      return convertToTreantFormat(root);
     }
 
-    // رسم شجرة التحورات بشكل عمودي
+    // رسم شجرة التحورات باستخدام Treant.js
     function drawTree(treeData) {
-      const container = document.getElementById('tree-container');
-
-      function createMutationBox(node) {
-        const mutationBox = document.createElement('div');
-        mutationBox.className = 'mutation-box';
-        mutationBox.innerHTML = `<strong>${node.name}</strong>`;
-
-        // إضافة العينات أسفل كل تحور
-        if (node.samples && node.samples.length > 0) {
-          const sampleContainer = document.createElement('div');
-          sampleContainer.className = 'sample-container';
-          node.samples.forEach(sample => {
-            const sampleDiv = document.createElement('div');
-            sampleDiv.className = 'sample';
-            sampleDiv.textContent = `${sample.name} (${sample.location})`;
-            sampleContainer.appendChild(sampleDiv);
-          });
-          mutationBox.appendChild(sampleContainer);
-        }
-
-        return mutationBox;
-      }
-
-      function drawNode(node, parentElement) {
-        const mutationBox = createMutationBox(node);
-        parentElement.appendChild(mutationBox);
-
-        if (node.children.length > 0) {
-          const branchContainer = document.createElement('div');
-          branchContainer.className = 'branch-line';
-          parentElement.appendChild(branchContainer);
-
-          const childrenContainer = document.createElement('div');
-          childrenContainer.style.display = 'flex';
-          childrenContainer.style.flexDirection = 'column';
-          childrenContainer.style.alignItems = 'center';
-          childrenContainer.style.marginTop = '20px';
-          parentElement.appendChild(childrenContainer);
-
-          node.children.forEach(child => {
-            drawNode(child, childrenContainer);
-          });
-        }
-      }
-
-      drawNode(treeData, container);
+      new Treant({
+        chart: {
+          container: "#tree-container",
+          node: {
+            HTMLclass: "nodeExample1"
+          }
+        },
+        nodeStructure: treeData
+      });
     }
 
     // الرابط للملف CSV
@@ -167,10 +87,7 @@
     fetchCSVData(csvUrl).then(data => {
       const treeData = processTreeData(data);
       drawTree(treeData);
-    }).catch(error => {
-      console.error('Error fetching or processing data:', error);
     });
   </script>
-
 </body>
 </html>
