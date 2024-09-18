@@ -36,10 +36,21 @@
         .mutation-title {
             font-weight: bold;
             fill: #2c3e50;
+            background: #ecf0f1;
+            padding: 5px;
+            border-radius: 5px;
         }
         .mutation-sample {
             font-size: 10px;
             fill: #7f8c8d;
+        }
+        .mutation-info {
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .mutation-container {
+            display: flex;
+            align-items: center;
         }
     </style>
 </head>
@@ -100,7 +111,7 @@
                     .attr('transform', `translate(${margin.left},${margin.top})`);
 
                 const root = d3.hierarchy(treeData);
-                const treeLayout = d3.tree().size([height, width]);
+                const treeLayout = d3.tree().size([height, width - 200]);
                 treeLayout(root);
 
                 svg.selectAll('line.link')
@@ -121,20 +132,29 @@
                 node.append('circle')
                     .attr('r', 6);
 
+                node.append('rect')
+                    .attr('x', -60)
+                    .attr('y', -15)
+                    .attr('width', 120)
+                    .attr('height', 30)
+                    .attr('class', 'mutation-title');
+
                 node.append('text')
                     .attr('dy', 3)
-                    .attr('x', d => d.children ? -10 : 10)
-                    .style('text-anchor', d => d.children ? 'end' : 'start')
+                    .attr('x', 0)
+                    .style('text-anchor', 'middle')
                     .attr('class', 'mutation-title')
                     .text(d => d.data.name);
 
                 // Add samples information
-                node.append('text')
-                    .attr('dy', 18)
-                    .attr('x', d => d.children ? -10 : 10)
-                    .style('text-anchor', d => d.children ? 'end' : 'start')
-                    .attr('class', 'mutation-sample')
-                    .text(d => d.data.samples.map(s => `${s.name} (${s.location})`).join(', '));
+                node.append('foreignObject')
+                    .attr('x', 80)
+                    .attr('y', -20)
+                    .attr('width', 200)
+                    .attr('height', 40)
+                    .append('xhtml:div')
+                    .attr('class', 'mutation-info')
+                    .html(d => d.data.samples.map(s => `<span class="mutation-sample">${s.name} (${s.location})</span>`).join('<br>'));
             }
         });
     </script>
