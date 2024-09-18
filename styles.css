@@ -1,0 +1,432 @@
+#mapdiv {
+  padding: 30px 30px 15px;
+  z-index: 0;
+}
+
+#controldiv {
+  padding: 0px 30px;
+}
+
+#tablediv {
+  padding: 15px 30px;
+  z-index: 1;
+}
+
+#map {
+  height: 100%;
+}
+
+#table {
+  margin-bottom: 30px;
+  height: 1000px;
+}
+
+#run-table {
+  height: 400px;
+}
+
+div[col-id='admix'] .ag-cell-wrapper {
+  width: 100%;
+}
+
+.bar-chart-bar {
+  background-color: #e8e8e8;
+  position: relative;
+  height: 20px;
+}
+
+.bar {
+  float: left;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100vh;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.split {
+  width: 100%;
+  height: 100%;
+  background-color: white;
+}
+
+.gutter {
+  cursor: row-resize;
+  background: white;
+  border-top: 1px solid #e1e1e1;
+  text-align: center;
+  color: #e1e1e1;
+  z-index: 1;
+  line-height: 0;
+}
+
+#date-range {
+  margin: 50px 15px 0px;
+}
+
+.noUi-connect {
+  background: var(--bs-blue);
+}
+
+.skin-very-pale {
+  background-color: #fff4f2;
+  color: black;
+}
+
+.skin-pale {
+  background-color: #fedcb9;
+  color: black;
+}
+
+.skin-intermediate {
+  background-color: #d7a57a;
+  color: black;
+}
+
+.skin-dark {
+  background-color: #a46136;
+  color: white;
+}
+
+.skin-dark-to-black {
+  background-color: #5e4437;
+  color: white;
+}
+
+.hair-black {
+  background-color: #000000;
+  color: white;
+}
+
+.hair-d-brown-black {
+  background-color: #59260b;
+  color: white;
+}
+
+.hair-blond {
+  background-color: #fbec5d;
+  color: black;
+}
+
+.hair-blond-d-blond {
+  background-color: #fbec5d;
+  color: black;
+}
+
+.hair-d-blond-brown {
+  background-color: #daa520;
+  color: black;
+}
+
+.hair-brown {
+  background-color: #964b00;
+  color: white;
+}
+
+.hair-brown-d-brown {
+  background-color: #964b00;
+  color: white;
+}
+
+.hair-red {
+  background-color: #c80815;
+  color: white;
+}
+
+.hair-light {
+  background-color: #daa520;
+  color: black;
+}
+
+.hair-dark {
+  background-color: #000000;
+  color: white;
+}
+
+.eyes-blue {
+  background-color: #318ce7;
+  color: white;
+}
+
+.eyes-intermediate {
+  background-color: #646c74;
+  color: white;
+}
+
+.eyes-brown {
+  background-color: #964b00;
+  color: white;
+}
+
+.y-hg-a {
+  background-color: #000000;
+  color: white;
+}
+
+.y-hg-b {
+  background-color: #59260b;
+  color: white;
+}
+
+.y-hg-c {
+  background-color: #fed8b1;
+  color: black;
+}
+
+.y-hg-d {
+  background-color: #ff8c00;
+  color: black;
+}
+
+.y-hg-e {
+  background-color: #964b00;
+  color: white;
+}
+
+.y-hg-e1b1b {
+  background-color: #40e0d0;
+  color: black;
+}
+
+.y-hg-f {
+  background-color: #dcdcdc;
+  color: black;
+}
+
+.y-hg-g {
+  background-color: #6cb4ee;
+  color: black;
+}
+
+.y-hg-h {
+  background-color: #138808;
+  color: white;
+}
+
+.y-hg-i {
+  background-color: #000080;
+  color: white;
+}
+
+.y-hg-j {
+  background-color: #008080;
+  color: white;
+}
+
+.y-hg-k {
+  background-color: #dcdcdc;
+  color: black;
+}
+
+.y-hg-l {
+  background-color: #93c572;
+  color: black;
+}
+
+.y-hg-m {
+  background-color: #8806ce;
+  color: white;
+}
+
+.y-hg-n {
+  background-color: #ffff99;
+  color: black;
+}
+
+.y-hg-o {
+  background-color: #ffef00;
+  color: black;
+}
+
+.y-hg-p {
+  background-color: #dcdcdc;
+  color: black;
+}
+
+.y-hg-q {
+  background-color: #c80815;
+  color: white;
+}
+
+.y-hg-r {
+  background-color: #246bce;
+  color: white;
+}
+
+.y-hg-s {
+  background-color: #e0b0ff;
+  color: black;
+}
+
+.y-hg-t {
+  background-color: #d0f0c0;
+  color: black;
+}
+
+.y-hg-other {
+  background-color: #dcdcdc;
+  color: black;
+}
+
+.mito-hg-a {
+  background-color: #ff8c00;
+  color: black;
+}
+
+.mito-hg-b {
+  background-color: #c80815;
+  color: white;
+}
+
+.mito-hg-c {
+  background-color: #ffc0cb;
+  color: black;
+}
+
+.mito-hg-d {
+  background-color: #fed8b1;
+  color: black;
+}
+
+.mito-hg-e {
+  background-color: #daa520;
+  color: black;
+}
+
+.mito-hg-f {
+  background-color: #ffef00;
+  color: black;
+}
+
+.mito-hg-g {
+  background-color: #ffff99;
+  color: black;
+}
+
+.mito-hg-h {
+  background-color: #246bce;
+  color: white;
+}
+
+.mito-hg-hv {
+  background-color: #246bce;
+  color: white;
+}
+
+.mito-hg-i {
+  background-color: #138808;
+  color: white;
+}
+
+.mito-hg-j {
+  background-color: #008080;
+  color: white;
+}
+
+.mito-hg-k {
+  background-color: #6cb4ee;
+  color: black;
+}
+
+.mito-hg-l0 {
+  background-color: #000000;
+  color: white;
+}
+
+.mito-hg-l1 {
+  background-color: #59260b;
+  color: white;
+}
+
+.mito-hg-l2 {
+  background-color: #964b00;
+  color: white;
+}
+
+.mito-hg-l3 {
+  background-color: #cd853f;
+  color: black;
+}
+
+.mito-hg-m {
+  background-color: #dcdcdc;
+  color: black;
+}
+
+.mito-hg-n {
+  background-color: #dcdcdc;
+  color: black;
+}
+
+.mito-hg-p {
+  background-color: #8806ce;
+  color: white;
+}
+
+.mito-hg-q {
+  background-color: #e0b0ff;
+  color: black;
+}
+
+.mito-hg-r {
+  background-color: #dcdcdc;
+  color: black;
+}
+
+.mito-hg-r0 {
+  background-color: #246bce;
+  color: white;
+}
+
+.mito-hg-s {
+  background-color: #fae6fa;
+  color: black;
+}
+
+.mito-hg-t {
+  background-color: #008080;
+  color: white;
+}
+
+.mito-hg-u {
+  background-color: #000080;
+  color: white;
+}
+
+.mito-hg-v {
+  background-color: #246bce;
+  color: white;
+}
+
+.mito-hg-w {
+  background-color: #93c572;
+  color: black;
+}
+
+.mito-hg-x {
+  background-color: #d0f0c0;
+  color: black;
+}
+
+.mito-hg-y {
+  background-color: #ffd700;
+  color: black;
+}
+
+.mito-hg-z {
+  background-color: #ffc0cb;
+  color: black;
+}
+
+.mito-hg-other {
+  background-color: #dcdcdc;
+  color: black;
+}
