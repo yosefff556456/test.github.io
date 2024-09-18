@@ -88,23 +88,23 @@
                     .attr('height', height);
 
                 const root = d3.hierarchy(treeData);
-                const treeLayout = d3.tree().size([height, width - 200]);
+                const treeLayout = d3.tree().size([width, height - 200]); // Flip width and height
                 treeLayout(root);
 
                 svg.selectAll('line.link')
                     .data(root.descendants().slice(1))
                     .enter().append('line')
                     .attr('class', 'link')
-                    .attr('x1', d => d.y)
-                    .attr('y1', d => d.x)
-                    .attr('x2', d => d.parent.y)
-                    .attr('y2', d => d.parent.x);
+                    .attr('x1', d => d.x)
+                    .attr('y1', d => d.y)
+                    .attr('x2', d => d.parent.x)
+                    .attr('y2', d => d.parent.y);
 
                 const node = svg.selectAll('g.node')
                     .data(root.descendants())
                     .enter().append('g')
                     .attr('class', 'node')
-                    .attr('transform', d => `translate(${d.y},${d.x})`);
+                    .attr('transform', d => `translate(${d.x},${d.y})`); // Flip x and y
 
                 node.append('circle')
                     .attr('r', 6);
