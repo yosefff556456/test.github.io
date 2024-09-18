@@ -4,29 +4,53 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>مشجر التحورات الجينية</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
-    /* تنسيقات بسيطة لشجرة التحورات */
-    .node {
-      font: 12px sans-serif;
-      cursor: pointer;
+    /* تنسيق عام للصناديق */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
     }
-    .node circle {
-      fill: #999;
+
+    .tree-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    .node text {
+
+    .mutation-box {
+      border: 2px solid #333;
+      padding: 10px;
+      margin: 10px 0;
+      text-align: center;
+      background-color: #f9f9f9;
+      width: 200px;
+    }
+
+    .sample-container {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .sample {
+      background-color: #ddd;
+      padding: 5px;
+      margin: 5px;
+      border-radius: 5px;
       font-size: 12px;
-      fill: #333;
     }
-    .link {
-      fill: none;
-      stroke: #ccc;
-      stroke-width: 2px;
+
+    .branch-line {
+      width: 2px;
+      height: 20px;
+      background-color: #333;
+      margin: 0 auto;
     }
   </style>
 </head>
 <body>
-  <div id="tree-container"></div>
+
+  <div id="tree-container" class="tree-container"></div>
 
   <script>
     // الدالة لجلب البيانات من ملف CSV
@@ -62,54 +86,47 @@
       return root;
     }
 
-    // رسم شجرة التحورات باستخدام D3.js
+    // رسم شجرة التحورات بشكل عمودي
     function drawTree(treeData) {
-      const width = 1000;
-      const height = 600;
+      const container = document.getElementById('tree-container');
 
-      const svg = d3.select("#tree-container")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .append("g")
-        .attr("transform", "translate(50,50)");
+      function createMutationBox(node) {
+        const mutationBox = document.createElement('div');
+        mutationBox.className = 'mutation-box';
+        mutationBox.innerHTML = `<strong>${node.name}</strong>`;
 
-      const treeLayout = d3.tree().size([height, width - 160]);
+        // إضافة العينات أسفل كل تحور
+        if (node.samples) {
+          const sampleContainer = document.createElement('div');
+          sampleContainer.className = 'sample-container';
+          node.samples.forEach(sample => {
+            const sampleDiv = document.createElement('div');
+            sampleDiv.className = 'sample';
+            sampleDiv.textContent = `${sample.name} (${sample.location})`;
+            sampleContainer.appendChild(sampleDiv);
+          });
+          mutationBox.appendChild(sampleContainer);
+        }
 
-      const root = d3.hierarchy(treeData);
-      treeLayout(root);
+        return mutationBox;
+      }
 
-      const link = svg.selectAll(".link")
-        .data(root.links())
-        .enter()
-        .append("path")
-        .attr("class", "link")
-        .attr("d", d3.linkHorizontal()
-          .x(d => d.y)
-          .y(d => d.x));
+      function drawNode(node) {
+        const mutationBox = createMutationBox(node);
+        container.appendChild(mutationBox);
 
-      const node = svg.selectAll(".node")
-        .data(root.descendants())
-        .enter()
-        .append("g")
-        .attr("class", "node")
-        .attr("transform", d => `translate(${d.y},${d.x})`);
+        // رسم خط الفروع العمودي
+        if (node.children.length > 0) {
+          const branchLine = document.createElement('div');
+          branchLine.className = 'branch-line';
+          container.appendChild(branchLine);
 
-      node.append("circle").attr("r", 5);
+          // رسم كل طفل بشكل متكرر
+          node.children.forEach(child => drawNode(child));
+        }
+      }
 
-      node.append("text")
-        .attr("dy", 3)
-        .attr("x", d => d.children ? -10 : 10)
-        .style("text-anchor", d => d.children ? "end" : "start")
-        .text(d => d.data.name);
-
-      // عرض العينات أسفل كل طفرة
-      node.filter(d => d.data.samples)
-        .append("text")
-        .attr("dy", 20)
-        .attr("x", 10)
-        .style("fill", "#555")
-        .text(d => d.data.samples.map(s => `${s.name} (${s.location})`).join(', '));
+      drawNode(treeData);
     }
 
     // الرابط للملف CSV
@@ -121,5 +138,6 @@
       drawTree(treeData);
     });
   </script>
+
 </body>
 </html>
