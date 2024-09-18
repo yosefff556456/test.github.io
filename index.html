@@ -10,6 +10,11 @@
       font-family: Arial, sans-serif;
       padding: 20px;
       margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
     }
 
     .tree-container {
@@ -71,7 +76,11 @@
     async function fetchCSVData(url) {
       const response = await fetch(url);
       const data = await response.text();
-      const parsedData = d3.csvParse(data);
+      const lines = data.split('\n').slice(1);
+      const parsedData = lines.map(line => {
+        const [personInfo, locationInfo, mutationInfo] = line.split(',');
+        return { personInfo, locationInfo, mutationInfo };
+      });
       return parsedData;
     }
 
@@ -134,14 +143,15 @@
           branchContainer.className = 'branch-line';
           parentElement.appendChild(branchContainer);
 
+          const childrenContainer = document.createElement('div');
+          childrenContainer.style.display = 'flex';
+          childrenContainer.style.flexDirection = 'column';
+          childrenContainer.style.alignItems = 'center';
+          childrenContainer.style.marginTop = '20px';
+          parentElement.appendChild(childrenContainer);
+
           node.children.forEach(child => {
-            const childContainer = document.createElement('div');
-            childContainer.style.display = 'flex';
-            childContainer.style.flexDirection = 'column';
-            childContainer.style.alignItems = 'center';
-            childContainer.style.marginTop = '20px';
-            parentElement.appendChild(childContainer);
-            drawNode(child, childContainer);
+            drawNode(child, childrenContainer);
           });
         }
       }
@@ -156,8 +166,11 @@
     fetchCSVData(csvUrl).then(data => {
       const treeData = processTreeData(data);
       drawTree(treeData);
+    }).catch(error => {
+      console.error('Error fetching or processing data:', error);
     });
   </script>
 
 </body>
 </html>
+
