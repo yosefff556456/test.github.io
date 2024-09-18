@@ -21,6 +21,7 @@
         }
         text {
             pointer-events: none;
+            dominant-baseline: middle;
         }
         .link {
             stroke: #3498db;
@@ -91,7 +92,7 @@
             function drawTree(treeData) {
                 const width = 1200;
                 const height = 800;
-                const margin = 40; // Margin to prevent text overlap
+                const margin = 100; // Adjust margin for better spacing
 
                 const svg = d3.select('#tree').append('svg')
                     .attr('width', width)
@@ -121,16 +122,16 @@
                     .attr('transform', d => `translate(${d.x},${d.y})`);
 
                 node.append('circle')
-                    .attr('r', 6);
+                    .attr('r', 8); // Increase radius for better visibility
 
                 node.append('text')
-                    .attr('dy', 3)
+                    .attr('dy', 4) // Adjust vertical alignment
                     .attr('x', d => d.children ? -12 : 12)
                     .style('text-anchor', d => d.children ? 'end' : 'start')
                     .style('fill', '#34495e')
                     .style('font-size', '10px')
                     .text(d => d.data.name)
-                    .call(wrap, 100); // Wrap text if it exceeds a certain width
+                    .call(wrapText, 80); // Wrap text if it exceeds a certain width
 
                 // Add samples information
                 node.append('title')
@@ -150,17 +151,17 @@
                 d3.select("svg").call(zoom);
 
                 // Function to wrap text
-                function wrap(text, width) {
+                function wrapText(text, width) {
                     text.each(function() {
-                        const text = d3.select(this);
-                        const words = text.text().split(/\s+/).reverse();
+                        const textElement = d3.select(this);
+                        const words = textElement.text().split(/\s+/).reverse();
                         let word;
                         let line = [];
                         let lineNumber = 0;
                         let lineHeight = 1.1; // ems
-                        let y = text.attr("y");
-                        let dy = parseFloat(text.attr("dy")) || 0;
-                        let tspan = text.text(null).append("tspan").attr("x", 0).attr("dy", dy + "em");
+                        let y = textElement.attr("y");
+                        let dy = parseFloat(textElement.attr("dy")) || 0;
+                        let tspan = textElement.text(null).append("tspan").attr("x", 0).attr("dy", dy + "em");
                         
                         while (word = words.pop()) {
                             line.push(word);
@@ -169,7 +170,7 @@
                                 line.pop();
                                 tspan.text(line.join(" "));
                                 line = [word];
-                                tspan = text.append("tspan").attr("x", 0).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                                tspan = textElement.append("tspan").attr("x", 0).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
                             }
                         }
                     });
