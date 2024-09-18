@@ -39,7 +39,8 @@
 
       // معالجة البيانات وإنشاء العقد والفروع
       data.forEach(({ personInfo, locationInfo, mutationInfo }) => {
-        const mutationArray = mutationInfo.split('>');
+        // استبدال علامات "أكبر من" بفواصل
+        const mutationArray = mutationInfo.replace(/ > /g, ' > ').split(' > ');
         let currentNode = root;
 
         mutationArray.forEach((mutation, index) => {
