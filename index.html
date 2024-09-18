@@ -9,6 +9,7 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+      margin: 0;
     }
 
     .tree-container {
@@ -24,6 +25,7 @@
       text-align: center;
       background-color: #f9f9f9;
       width: 200px;
+      position: relative;
     }
 
     .sample-container {
@@ -42,9 +44,21 @@
 
     .branch-line {
       width: 2px;
-      height: 20px;
       background-color: #333;
       margin: 0 auto;
+      position: relative;
+    }
+
+    .branch-line::before {
+      content: '';
+      display: block;
+      width: 0;
+      height: 20px;
+      border-left: 2px solid #333;
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
     }
   </style>
 </head>
@@ -66,7 +80,7 @@
       const root = { name: 'J', children: [] };
 
       data.forEach(({ personInfo, locationInfo, mutationInfo }) => {
-        const mutationArray = mutationInfo.split('>');
+        const mutationArray = mutationInfo.split('>').map(m => m.trim());
         let currentNode = root;
 
         mutationArray.forEach((mutation, index) => {
@@ -111,22 +125,28 @@
         return mutationBox;
       }
 
-      function drawNode(node) {
+      function drawNode(node, parentElement) {
         const mutationBox = createMutationBox(node);
-        container.appendChild(mutationBox);
+        parentElement.appendChild(mutationBox);
 
-        // رسم خط الفروع العمودي
         if (node.children.length > 0) {
-          const branchLine = document.createElement('div');
-          branchLine.className = 'branch-line';
-          container.appendChild(branchLine);
+          const branchContainer = document.createElement('div');
+          branchContainer.className = 'branch-line';
+          parentElement.appendChild(branchContainer);
 
-          // رسم كل طفل بشكل متكرر
-          node.children.forEach(child => drawNode(child));
+          node.children.forEach(child => {
+            const childContainer = document.createElement('div');
+            childContainer.style.display = 'flex';
+            childContainer.style.flexDirection = 'column';
+            childContainer.style.alignItems = 'center';
+            childContainer.style.marginTop = '20px';
+            parentElement.appendChild(childContainer);
+            drawNode(child, childContainer);
+          });
         }
       }
 
-      drawNode(treeData);
+      drawNode(treeData, container);
     }
 
     // الرابط للملف CSV
