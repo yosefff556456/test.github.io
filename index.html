@@ -15,12 +15,11 @@
         }
         .label {
             font-size: 12px;
+            text-anchor: middle;
+            dominant-baseline: middle;
         }
         svg {
             font: 12px sans-serif;
-        }
-        text {
-            pointer-events: none;
         }
         .link {
             stroke: #3498db;
@@ -88,8 +87,8 @@
             }
 
             function drawTree(treeData) {
-                const width = 1200;
-                const height = 800;
+                const width = window.innerWidth;
+                const height = window.innerHeight;
                 const margin = { top: 20, right: 120, bottom: 20, left: 120 };
 
                 const svg = d3.select('#tree').append('svg')
@@ -100,7 +99,7 @@
 
                 const root = d3.hierarchy(treeData);
                 const treeLayout = d3.tree().size([height - margin.top - margin.bottom, width - margin.left - margin.right])
-                    .nodeSize([40, 200]); // Adjust spacing
+                    .nodeSize([50, 150]); // Adjust spacing
 
                 treeLayout(root);
 
@@ -122,15 +121,11 @@
                 node.append('circle')
                     .attr('r', 6);
 
-                // Add text labels with adjustments to avoid overlap
                 node.append('text')
                     .attr('dy', 3)
-                    .attr('x', d => d.children ? -15 : 15)
-                    .style('text-anchor', d => d.children ? 'end' : 'start')
-                    .style('fill', '#34495e')
-                    .attr('class', 'label')
+                    .attr('y', 15)
                     .text(d => d.data.name)
-                    .call(wrapText, 100); // Wrap text function
+                    .attr('class', 'label');
 
                 // Add samples information
                 node.append('title')
@@ -148,33 +143,6 @@
                     });
 
                 d3.select("svg").call(zoom);
-
-                // Function to wrap text to avoid overlap
-                function wrapText(text, width) {
-                    text.each(function() {
-                        const text = d3.select(this);
-                        const words = text.text().split(/\s+/).reverse();
-                        let word;
-                        let line = [];
-                        let lineNumber = 0;
-                        const lineHeight = 1.1; // ems
-                        const y = text.attr("y");
-                        const x = text.attr("x");
-                        const dy = parseFloat(text.attr("dy")) || 0;
-                        let tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
-
-                        while (word = words.pop()) {
-                            line.push(word);
-                            tspan.text(line.join(" "));
-                            if (tspan.node().getComputedTextLength() > width) {
-                                line.pop();
-                                tspan.text(line.join(" "));
-                                line = [word];
-                                tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-                            }
-                        }
-                    });
-                }
             }
         });
     </script>
