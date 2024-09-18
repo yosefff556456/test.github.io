@@ -40,6 +40,11 @@
             align-items: center;
             overflow: hidden; /* Hide overflow to prevent content from leaving bounds */
         }
+        .info {
+            font-size: 10px;
+            fill: #2c3e50;
+            text-anchor: start;
+        }
     </style>
 </head>
 <body>
@@ -131,6 +136,16 @@
                     .text(d => {
                         if (!d.data.samples) return '';
                         return d.data.samples.map(s => `${s.name} (${s.location})`).join('\n');
+                    });
+
+                // Add additional information
+                node.append('text')
+                    .attr('class', 'info')
+                    .attr('dy', 20)
+                    .attr('x', 10)
+                    .text(d => {
+                        if (!d.data.samples.length) return '';
+                        return d.data.samples.map(s => `${s.name} (${s.location})`).join('; ');
                     });
 
                 // Zoom and pan settings
