@@ -1,94 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مشجر التحورات الجينية</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treant-js@1.0.0/treant.min.css">
-  <style>
-    /* تنسيقات مخصصة لجعل الشجرة تناسب العرض */
-    #tree-container {
-      width: 100%;
-      height: 600px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genetic Mutations Tree</title>
+    <style>
+        /* Add some basic styles for the tree */
+        .node {
+            cursor: pointer;
+        }
+        .node:hover {
+            stroke: #ff5733;
+            stroke-width: 2px;
+        }
+        .label {
+            font-size: 12px;
+        }
+        svg {
+            font: 10px sans-serif;
+        }
+    </style>
 </head>
 <body>
-  <div id="tree-container"></div>
+    <div id="tree"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.0/raphael.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/treant-js@1.0.0/treant.min.js"></script>
-  <script>
-    // الدالة لجلب البيانات من ملف CSV
-    async function fetchCSVData(url) {
-      const response = await fetch(url);
-      const data = await response.text();
-      const parsedData = d3.csvParse(data);
-      return parsedData;
-    }
+    <!-- Load D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Load CSV data from Google Sheets
+            Papa.parse('https://docs.google.com/spreadsheets/d/e/2PACX-1vRnDqmeMrSFgOBL5MHbulxNw7F9PO4PZBFXtBqEyPmiljTZWQCTwakxKiRneckhvknl-jpvOeR7PuJT/pub?output=csv', {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    const data = results.data;
+                    const treeData = buildTreeData(data);
+                    drawTree(treeData);
+                }
+            });
 
-    // تحويل البيانات إلى هيكل الشجرة لـ Treant.js
-    function processTreeData(data) {
-      const nodes = [];
-      const links = [];
+            function buildTreeData(data) {
+                // Create a hierarchical tree structure based on the data
+                let tree = { name: 'j', children: [] };
+                let nodes = {};
+                nodes['j'] = tree;
 
-      // إنشاء العقدة الجذرية
-      const root = { name: 'J', children: [] };
-      const nodeMap = { 'J': root };
+                data.forEach(row => {
+                    if (!row['mutationInfo']) return; // Skip rows without mutations
+                    const mutations = row['mutationInfo'].split('>');
+                    let currentNode = nodes['j'];
 
-      // معالجة البيانات وإنشاء العقد والفروع
-      data.forEach(({ personInfo, locationInfo, mutationInfo }) => {
-        // استبدال علامات "أكبر من" بفواصل
-        const mutationArray = mutationInfo.replace(/ > /g, ' > ').split(' > ');
-        let currentNode = root;
+                    mutations.forEach(mutation => {
+                        if (!nodes[mutation]) {
+                            nodes[mutation] = { name: mutation, children: [], samples: [] };
+                            currentNode.children.push(nodes[mutation]);
+                        }
+                        currentNode = nodes[mutation];
+                    });
+                    currentNode.samples.push({ name: row['personInfo'], location: row['locationInfo'] });
+                });
 
-        mutationArray.forEach((mutation, index) => {
-          if (!nodeMap[mutation]) {
-            nodeMap[mutation] = { name: mutation, children: [] };
-            currentNode.children.push(nodeMap[mutation]);
-          }
-          currentNode = nodeMap[mutation];
-          if (index === mutationArray.length - 1) {
-            if (!currentNode.samples) currentNode.samples = [];
-            currentNode.samples.push({ name: personInfo, location: locationInfo });
-          }
+                return tree;
+            }
+
+            function drawTree(treeData) {
+                const width = 960;
+                const height = 600;
+
+                const svg = d3.select('#tree').append('svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                const root = d3.hierarchy(treeData);
+                const treeLayout = d3.tree().size([height, width - 160]);
+                treeLayout(root);
+
+                svg.selectAll('line.link')
+                    .data(root.descendants().slice(1))
+                    .enter().append('line')
+                    .attr('class', 'link')
+                    .attr('x1', d => d.y)
+                    .attr('y1', d => d.x)
+                    .attr('x2', d => d.parent.y)
+                    .attr('y2', d => d.parent.x);
+
+                const node = svg.selectAll('g.node')
+                    .data(root.descendants())
+                    .enter().append('g')
+                    .attr('class', 'node')
+                    .attr('transform', d => `translate(${d.y},${d.x})`);
+
+                node.append('circle')
+                    .attr('r', 5);
+
+                node.append('text')
+                    .attr('dy', 3)
+                    .attr('x', d => d.children ? -10 : 10)
+                    .style('text-anchor', d => d.children ? 'end' : 'start')
+                    .text(d => d.data.name);
+
+                // Add samples information
+                node.append('title')
+                    .text(d => {
+                        if (!d.data.samples) return '';
+                        return d.data.samples.map(s => `${s.name} (${s.location})`).join('\n');
+                    });
+            }
         });
-      });
-
-      function convertToTreantFormat(node) {
-        const treantNode = { text: { name: node.name }, children: [] };
-        if (node.samples) {
-          treantNode.text.name += `<br>${node.samples.map(s => `${s.name} (${s.location})`).join('<br>')}`;
-        }
-        node.children.forEach(child => treantNode.children.push(convertToTreantFormat(child)));
-        return treantNode;
-      }
-
-      return convertToTreantFormat(root);
-    }
-
-    // رسم شجرة التحورات باستخدام Treant.js
-    function drawTree(treeData) {
-      new Treant({
-        chart: {
-          container: "#tree-container",
-          node: {
-            HTMLclass: "nodeExample1"
-          }
-        },
-        nodeStructure: treeData
-      });
-    }
-
-    // الرابط للملف CSV
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnDqmeMrSFgOBL5MHbulxNw7F9PO4PZBFXtBqEyPmiljTZWQCTwakxKiRneckhvknl-jpvOeR7PuJT/pub?output=csv';
-
-    // استدعاء الدالة لجلب البيانات ورسم الشجرة
-    fetchCSVData(csvUrl).then(data => {
-      const treeData = processTreeData(data);
-      drawTree(treeData);
-    });
-  </script>
+    </script>
 </body>
 </html>
