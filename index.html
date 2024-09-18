@@ -5,22 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Genetic Mutations Tree</title>
     <style>
-        /* Add some basic styles for the tree */
+        /* Basic styles for the tree */
         .node {
             cursor: pointer;
         }
         .node:hover {
-            stroke: #ff5733;
+            stroke: #2ecc71;
             stroke-width: 2px;
         }
         .label {
             font-size: 12px;
         }
         svg {
-            font: 10px sans-serif;
+            font: 12px sans-serif;
         }
         text {
             pointer-events: none;
+        }
+        .link {
+            stroke: #3498db;
+            stroke-width: 2px;
+        }
+        circle {
+            fill: #e74c3c;
+            stroke: #c0392b;
+            stroke-width: 2px;
         }
     </style>
 </head>
@@ -71,15 +80,15 @@
             }
 
             function drawTree(treeData) {
-                const width = 960;
-                const height = 600;
+                const width = 1200;
+                const height = 800;
 
                 const svg = d3.select('#tree').append('svg')
                     .attr('width', width)
                     .attr('height', height);
 
                 const root = d3.hierarchy(treeData);
-                const treeLayout = d3.tree().size([height, width - 160]);
+                const treeLayout = d3.tree().size([height, width - 200]);
                 treeLayout(root);
 
                 svg.selectAll('line.link')
@@ -98,13 +107,13 @@
                     .attr('transform', d => `translate(${d.y},${d.x})`);
 
                 node.append('circle')
-                    .attr('r', 5)
-                    .style('fill', '#ff5733');
+                    .attr('r', 6);
 
                 node.append('text')
                     .attr('dy', 3)
-                    .attr('x', d => d.children ? -10 : 10)
+                    .attr('x', d => d.children ? -12 : 12)
                     .style('text-anchor', d => d.children ? 'end' : 'start')
+                    .style('fill', '#34495e')
                     .text(d => d.data.name);
 
                 // Add samples information
