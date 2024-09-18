@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Genetic Mutations Tree</title>
     <style>
-        /* Basic styles for the tree */
+        /* Add some basic styles for the tree */
         .node {
             cursor: pointer;
         }
         .node:hover {
-            stroke: #2ecc71;
+            stroke: #e67e22;
             stroke-width: 2px;
         }
         .label {
-            font-size: 12px;
+            font-size: 14px;
         }
         svg {
             font: 12px sans-serif;
@@ -23,12 +23,12 @@
             pointer-events: none;
         }
         .link {
-            stroke: #3498db;
+            stroke: #2980b9;
             stroke-width: 2px;
         }
         circle {
-            fill: #e74c3c;
-            stroke: #c0392b;
+            fill: #c0392b;
+            stroke: #e74c3c;
             stroke-width: 2px;
         }
     </style>
@@ -63,7 +63,8 @@
 
                 data.forEach(row => {
                     if (!row['mutationInfo']) return; // Skip rows without mutations
-                    const mutations = row['mutationInfo'].split('>');
+                    // Remove the last '>' from mutationInfo
+                    const mutations = row['mutationInfo'].split('>').filter(m => m.trim() !== '');
                     let currentNode = nodes['j'];
 
                     mutations.forEach(mutation => {
@@ -82,13 +83,14 @@
             function drawTree(treeData) {
                 const width = 1200;
                 const height = 800;
+                const separation = 100; // Space between nodes
 
                 const svg = d3.select('#tree').append('svg')
                     .attr('width', width)
                     .attr('height', height);
 
                 const root = d3.hierarchy(treeData);
-                const treeLayout = d3.tree().size([height, width - 200]);
+                const treeLayout = d3.tree().size([height - 100, width - 200]).nodeSize([separation, separation]);
                 treeLayout(root);
 
                 svg.selectAll('line.link')
@@ -107,11 +109,11 @@
                     .attr('transform', d => `translate(${d.y},${d.x})`);
 
                 node.append('circle')
-                    .attr('r', 6);
+                    .attr('r', 7);
 
                 node.append('text')
                     .attr('dy', 3)
-                    .attr('x', d => d.children ? -12 : 12)
+                    .attr('x', d => d.children ? -15 : 15)
                     .style('text-anchor', d => d.children ? 'end' : 'start')
                     .style('fill', '#34495e')
                     .text(d => d.data.name);
