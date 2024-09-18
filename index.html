@@ -91,16 +91,19 @@
             function drawTree(treeData) {
                 const width = 1200;
                 const height = 800;
+                const margin = 40; // Margin to prevent text overlap
 
                 const svg = d3.select('#tree').append('svg')
                     .attr('width', width)
                     .attr('height', height)
-                    .append('g');
+                    .append('g')
+                    .attr('transform', `translate(${margin},${margin})`);
 
                 const root = d3.hierarchy(treeData);
-                const treeLayout = d3.tree().size([width - 200, height - 200]); // Adjust size to fit within view
+                const treeLayout = d3.tree().size([width - 2 * margin, height - 2 * margin]);
                 treeLayout(root);
 
+                // Links
                 svg.selectAll('line.link')
                     .data(root.descendants().slice(1))
                     .enter().append('line')
@@ -110,6 +113,7 @@
                     .attr('x2', d => d.parent.x)
                     .attr('y2', d => d.parent.y);
 
+                // Nodes
                 const node = svg.selectAll('g.node')
                     .data(root.descendants())
                     .enter().append('g')
@@ -124,7 +128,9 @@
                     .attr('x', d => d.children ? -12 : 12)
                     .style('text-anchor', d => d.children ? 'end' : 'start')
                     .style('fill', '#34495e')
-                    .text(d => d.data.name);
+                    .style('font-size', '10px')
+                    .text(d => d.data.name)
+                    .call(wrap, 100); // Wrap text if it exceeds a certain width
 
                 // Add samples information
                 node.append('title')
@@ -142,6 +148,32 @@
                     });
 
                 d3.select("svg").call(zoom);
+
+                // Function to wrap text
+                function wrap(text, width) {
+                    text.each(function() {
+                        const text = d3.select(this);
+                        const words = text.text().split(/\s+/).reverse();
+                        let word;
+                        let line = [];
+                        let lineNumber = 0;
+                        let lineHeight = 1.1; // ems
+                        let y = text.attr("y");
+                        let dy = parseFloat(text.attr("dy")) || 0;
+                        let tspan = text.text(null).append("tspan").attr("x", 0).attr("dy", dy + "em");
+                        
+                        while (word = words.pop()) {
+                            line.push(word);
+                            tspan.text(line.join(" "));
+                            if (tspan.node().getComputedTextLength() > width) {
+                                line.pop();
+                                tspan.text(line.join(" "));
+                                line = [word];
+                                tspan = text.append("tspan").attr("x", 0).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                            }
+                        }
+                    });
+                }
             }
         });
     </script>
