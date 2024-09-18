@@ -40,19 +40,6 @@
             align-items: center;
             overflow: hidden; /* Hide overflow to prevent content from leaving bounds */
         }
-        .info {
-            font-size: 10px;
-            fill: #2c3e50;
-            text-anchor: start;
-        }
-        .info-box {
-            background: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            padding: 5px;
-            font-size: 10px;
-            fill: #2c3e50;
-        }
     </style>
 </head>
 <body>
@@ -139,17 +126,11 @@
                     .style('fill', '#34495e')
                     .text(d => d.data.name);
 
-                // Add additional information
-                node.append('foreignObject')
-                    .attr('x', 10)
-                    .attr('y', 10)
-                    .attr('width', 150)
-                    .attr('height', 60)
-                    .append('xhtml:div')
-                    .attr('class', 'info-box')
-                    .html(d => {
-                        if (!d.data.samples.length) return '';
-                        return d.data.samples.map(s => `${s.name} (${s.location})`).join('<br/>');
+                // Add samples information
+                node.append('title')
+                    .text(d => {
+                        if (!d.data.samples) return '';
+                        return d.data.samples.map(s => `${s.name} (${s.location})`).join('\n');
                     });
 
                 // Zoom and pan settings
