@@ -31,6 +31,10 @@
             stroke: #c0392b;
             stroke-width: 2px;
         }
+        .age-label {
+            font-size: 10px;
+            fill: #888;
+        }
     </style>
 </head>
 <body>
@@ -68,7 +72,7 @@
 
                     mutations.forEach(mutation => {
                         if (!nodes[mutation]) {
-                            nodes[mutation] = { name: mutation, children: [], samples: [] };
+                            nodes[mutation] = { name: mutation, children: [], samples: [], age: row['mutationAge'] || '' };
                             currentNode.children.push(nodes[mutation]);
                         }
                         currentNode = nodes[mutation];
@@ -88,7 +92,7 @@
                     .attr('height', height);
 
                 const root = d3.hierarchy(treeData);
-                const treeLayout = d3.tree().size([width, height - 200]); // Flip width and height
+                const treeLayout = d3.tree().size([width, height - 200]);
                 treeLayout(root);
 
                 svg.selectAll('line.link')
@@ -104,7 +108,7 @@
                     .data(root.descendants())
                     .enter().append('g')
                     .attr('class', 'node')
-                    .attr('transform', d => `translate(${d.x},${d.y})`); // Flip x and y
+                    .attr('transform', d => `translate(${d.x},${d.y})`);
 
                 node.append('circle')
                     .attr('r', 6);
@@ -115,6 +119,14 @@
                     .style('text-anchor', d => d.children ? 'end' : 'start')
                     .style('fill', '#34495e')
                     .text(d => d.data.name);
+
+                // Add age labels
+                node.append('text')
+                    .attr('class', 'age-label')
+                    .attr('dy', -10)
+                    .attr('x', d => d.children ? -12 : 12)
+                    .style('text-anchor', d => d.children ? 'end' : 'start')
+                    .text(d => d.data.age ? `Age: ${d.data.age}` : '');
 
                 // Add samples information
                 node.append('title')
