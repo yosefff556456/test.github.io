@@ -19,6 +19,9 @@
         svg {
             font: 10px sans-serif;
         }
+        text {
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -37,6 +40,9 @@
                     const data = results.data;
                     const treeData = buildTreeData(data);
                     drawTree(treeData);
+                },
+                error: function(error) {
+                    console.error('Error loading CSV data:', error);
                 }
             });
 
@@ -92,7 +98,8 @@
                     .attr('transform', d => `translate(${d.y},${d.x})`);
 
                 node.append('circle')
-                    .attr('r', 5);
+                    .attr('r', 5)
+                    .style('fill', '#ff5733');
 
                 node.append('text')
                     .attr('dy', 3)
