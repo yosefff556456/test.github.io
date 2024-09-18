@@ -42,7 +42,7 @@
       const root = { name: 'J', children: [] };
 
       data.forEach(({ personInfo, locationInfo, mutationInfo }) => {
-        const mutationArray = mutationInfo.split(' > ');
+        const mutationArray = mutationInfo.split('>');
         let currentNode = root;
 
         mutationArray.forEach((mutation, index) => {
