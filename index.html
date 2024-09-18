@@ -45,7 +45,8 @@
         .node text {
             font-size: 14px;
             fill: #34495e;
-            dominant-baseline: middle; /* Vertically center text */
+            dominant-baseline: central; /* Vertically center text */
+            alignment-baseline: middle; /* Align text centrally with the circle */
         }
         .node circle {
             r: 8; /* Increase radius for better visibility */
@@ -130,8 +131,8 @@
                     .attr('r', 8); // Increase radius for better visibility
 
                 node.append('text')
-                    .attr('dy', 4) // Adjust vertical alignment
-                    .attr('y', 20) // Add space below the node
+                    .attr('dy', 0) // Center vertically with the circle
+                    .attr('y', 20) // Adjust position if necessary
                     .text(d => d.data.name);
 
                 // Add samples information
