@@ -1,86 +1,125 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشجر العائلة</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مشجر التحورات الجينية</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    /* تنسيقات بسيطة لشجرة التحورات */
+    .node {
+      font: 12px sans-serif;
+      cursor: pointer;
+    }
+    .node circle {
+      fill: #999;
+    }
+    .node text {
+      font-size: 12px;
+      fill: #333;
+    }
+    .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 2px;
+    }
+  </style>
 </head>
 <body>
+  <div id="tree-container"></div>
 
-<h1>إنشاء مشجر العائلة من ملف CSV</h1>
-
-<button id="loadData">تحميل البيانات</button>
-
-<table id="familyTree">
-    <thead>
-        <tr>
-            <th>التحور</th>
-            <th>العينات</th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
-
-<script>
-    const familyTree = {};
-
-    document.getElementById('loadData').addEventListener('click', function() {
-        fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vRnDqmeMrSFgOBL5MHbulxNw7F9PO4PZBFXtBqEyPmiljTZWQCTwakxKiRneckhvknl-jpvOeR7PuJT/pub?output=csv')
-            .then(response => response.text())
-            .then(data => {
-                const rows = data.split('\n').slice(1); // تخطي العنوان
-                rows.forEach(row => {
-                    const [personInfo, locationInfo, mutationInfo] = row.split(',').map(cell => cell.trim());
-
-                    const mutations = mutationInfo.split('<').map(m => m.trim());
-                    let currentNode = familyTree;
-
-                    mutations.forEach((mutation, i) => {
-                        if (!currentNode[mutation]) {
-                            currentNode[mutation] = { children: [] };
-                        }
-                        if (i === mutations.length - 1) {
-                            currentNode[mutation].children.push({ personInfo, locationInfo });
-                        }
-                        currentNode = currentNode[mutation];
-                    });
-                });
-
-                updateTable();
-            });
-    });
-
-    function updateTable() {
-        const tbody = document.getElementById('familyTree').querySelector('tbody');
-        tbody.innerHTML = ''; // مسح الجدول
-
-        Object.entries(familyTree).forEach(([mutation, { children }]) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `<td>${mutation}</td><td>${children.map(child => `${child.personInfo} (${child.locationInfo})`).join(', ')}</td>`;
-            tbody.appendChild(row);
-        });
+  <script>
+    // الدالة لجلب البيانات من ملف CSV
+    async function fetchCSVData(url) {
+      const response = await fetch(url);
+      const data = await response.text();
+      const parsedData = d3.csvParse(data);
+      return parsedData;
     }
-</script>
 
+    // تحويل البيانات إلى هيكل الشجرة
+    function processTreeData(data) {
+      const root = { name: 'J', children: [] };
+
+      data.forEach(({ اسم, الموقع, التحورات }) => {
+        const mutationArray = التحورات.split(' > ');
+        let currentNode = root;
+
+        mutationArray.forEach((mutation, index) => {
+          let existingNode = currentNode.children.find(child => child.name === mutation);
+          if (!existingNode) {
+            existingNode = { name: mutation, children: [] };
+            currentNode.children.push(existingNode);
+          }
+          currentNode = existingNode;
+          if (index === mutationArray.length - 1) {
+            if (!currentNode.samples) currentNode.samples = [];
+            currentNode.samples.push({ name: اسم, location: الموقع });
+          }
+        });
+      });
+
+      return root;
+    }
+
+    // رسم شجرة التحورات باستخدام D3.js
+    function drawTree(treeData) {
+      const width = 1000;
+      const height = 600;
+
+      const svg = d3.select("#tree-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", "translate(50,50)");
+
+      const treeLayout = d3.tree().size([height, width - 160]);
+
+      const root = d3.hierarchy(treeData);
+      treeLayout(root);
+
+      const link = svg.selectAll(".link")
+        .data(root.links())
+        .enter()
+        .append("path")
+        .attr("class", "link")
+        .attr("d", d3.linkHorizontal()
+          .x(d => d.y)
+          .y(d => d.x));
+
+      const node = svg.selectAll(".node")
+        .data(root.descendants())
+        .enter()
+        .append("g")
+        .attr("class", "node")
+        .attr("transform", d => `translate(${d.y},${d.x})`);
+
+      node.append("circle").attr("r", 5);
+
+      node.append("text")
+        .attr("dy", 3)
+        .attr("x", d => d.children ? -10 : 10)
+        .style("text-anchor", d => d.children ? "end" : "start")
+        .text(d => d.data.name);
+
+      // عرض العينات أسفل كل طفرة
+      node.filter(d => d.data.samples)
+        .append("text")
+        .attr("dy", 20)
+        .attr("x", 10)
+        .style("fill", "#555")
+        .text(d => d.data.samples.map(s => `${s.name} (${s.location})`).join(', '));
+    }
+
+    // الرابط للملف CSV
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRnDqmeMrSFgOBL5MHbulxNw7F9PO4PZBFXtBqEyPmiljTZWQCTwakxKiRneckhvknl-jpvOeR7PuJT/pub?output=csv';
+
+    // استدعاء الدالة لجلب البيانات ورسم الشجرة
+    fetchCSVData(csvUrl).then(data => {
+      const treeData = processTreeData(data);
+      drawTree(treeData);
+    });
+  </script>
 </body>
 </html>
