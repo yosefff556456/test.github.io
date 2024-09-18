@@ -16,7 +16,6 @@
         .label {
             font-size: 12px;
             text-anchor: middle;
-            dominant-baseline: middle;
         }
         svg {
             font: 12px sans-serif;
@@ -37,7 +36,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden; /* Hide overflow to prevent content from leaving bounds */
+            overflow: hidden;
         }
     </style>
 </head>
@@ -93,35 +92,35 @@
                     .append('g');
 
                 const root = d3.hierarchy(treeData);
-                const treeLayout = d3.tree().nodeSize([60, 200]); // Adjust node size and spacing
+                const treeLayout = d3.tree().nodeSize([60, 180]); // Adjust node size and spacing
                 treeLayout(root);
 
-                // Calculate the SVG dimensions
-                const svgWidth = Math.max(root.descendants().length * 200, window.innerWidth);
-                const svgHeight = Math.max((root.height + 1) * 60, window.innerHeight);
-                svg.attr('transform', `translate(${svgWidth / 2}, ${svgHeight / 2})`);
+                // Get dimensions of the tree layout
+                const { x: rootX, y: rootY } = root;
+                const treeWidth = d3.max(root.descendants(), d => d.x) + 100; // Add margin
+                const treeHeight = d3.max(root.descendants(), d => d.y) + 100; // Add margin
 
-                // Update the SVG size
-                d3.select('svg')
-                    .attr('width', svgWidth)
-                    .attr('height', svgHeight);
+                // Set the SVG dimensions and translate the tree to center
+                svg.attr('width', treeWidth)
+                   .attr('height', treeHeight)
+                   .attr('transform', `translate(${treeWidth / 2}, ${treeHeight / 2})`);
 
                 // Draw links
                 svg.selectAll('line.link')
                     .data(root.descendants().slice(1))
                     .enter().append('line')
                     .attr('class', 'link')
-                    .attr('x1', d => d.x)
-                    .attr('y1', d => d.y)
-                    .attr('x2', d => d.parent.x)
-                    .attr('y2', d => d.parent.y);
+                    .attr('x1', d => d.x - treeWidth / 2)
+                    .attr('y1', d => d.y - treeHeight / 2)
+                    .attr('x2', d => d.parent.x - treeWidth / 2)
+                    .attr('y2', d => d.parent.y - treeHeight / 2);
 
                 // Draw nodes
                 const node = svg.selectAll('g.node')
                     .data(root.descendants())
                     .enter().append('g')
                     .attr('class', 'node')
-                    .attr('transform', d => `translate(${d.x},${d.y})`);
+                    .attr('transform', d => `translate(${d.x - treeWidth / 2},${d.y - treeHeight / 2})`);
 
                 node.append('circle')
                     .attr('r', 6);
@@ -142,18 +141,12 @@
                 // Zoom and pan settings
                 const zoom = d3.zoom()
                     .scaleExtent([0.5, 2]) // Min and max zoom levels
-                    .translateExtent([[0, 0], [svgWidth, svgHeight]]) // Bounds for panning
+                    .translateExtent([[0, 0], [treeWidth, treeHeight]]) // Bounds for panning
                     .on("zoom", (event) => {
                         svg.attr("transform", event.transform);
                     });
 
                 d3.select("svg").call(zoom);
-
-                // Center the tree
-                const { x, y } = root;
-                const offsetX = svgWidth / 2 - x;
-                const offsetY = svgHeight / 2 - y;
-                svg.attr("transform", `translate(${offsetX}, ${offsetY})`);
             }
         });
     </script>
