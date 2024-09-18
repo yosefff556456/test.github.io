@@ -41,8 +41,8 @@
     function processTreeData(data) {
       const root = { name: 'J', children: [] };
 
-      data.forEach(({ اسم, الموقع, التحورات }) => {
-        const mutationArray = التحورات.split(' > ');
+      data.forEach(({ personInfo, locationInfo, mutationInfo }) => {
+        const mutationArray = mutationInfo.split(' > ');
         let currentNode = root;
 
         mutationArray.forEach((mutation, index) => {
@@ -54,7 +54,7 @@
           currentNode = existingNode;
           if (index === mutationArray.length - 1) {
             if (!currentNode.samples) currentNode.samples = [];
-            currentNode.samples.push({ name: اسم, location: الموقع });
+            currentNode.samples.push({ name: personInfo, location: locationInfo });
           }
         });
       });
