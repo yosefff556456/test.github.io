@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet Heatmap with JSON Data</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <!-- مكتبة Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- مكتبة Heatmap الخاصة بـ Leaflet -->
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script>
+        // إعداد الخريطة وتحديد المركز الافتراضي
+        var map = L.map('map').setView([24.7136, 46.6753], 6);  // مركز الخريطة: الرياض
+
+        // إضافة طبقة OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // استقدام البيانات من ملف JSON
+        fetch('updated_yfull_ffhaplogroups.json')  // تأكد من أن ملف JSON في نفس المسار
+            .then(response => response.json())
+            .then(data => {
+                // إضافة الخريطة الحرارية
+                var heat = L.heatLayer(data, {  // `data` تحتوي على الإحداثيات
+                    radius: 25,       // حجم كل نقطة حرارية
+                    blur: 15,         // مستوى التمويه
+                    maxZoom: 10       // التكبير الأقصى لعرض التأثير
+                }).addTo(map);
+            })
+            .catch(error => console.error('Error fetching JSON:', error));
+    </script>
+</body>
+</html>
