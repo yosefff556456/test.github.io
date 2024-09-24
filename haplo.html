@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Leaflet Heatmap with Merging Ranges</title>
+    <title>Flexible and Connected Leaflet Heatmap</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -28,12 +28,14 @@
         fetch('updated_yfull_ffhaplogroups.json')  // تأكد من أن ملف JSON في نفس المسار
             .then(response => response.json())
             .then(data => {
-                // إضافة الخريطة الحرارية مع دمج النطاقات القريبة
+                // إضافة الخريطة الحرارية مع ضبط المرونة والتداخل بين النقاط
                 var heat = L.heatLayer(data, {
-                    radius: 40,       // زيادة البؤرة لتمديد التأثير
-                    blur: 30,         // توازن التمويه مع البؤرة لتحقيق تداخل سلس
+                    radius: 50,       // زيادة البؤرة لتحقيق نطاقات أكبر
+                    blur: 40,         // زيادة التمويه لجعل النطاقات أكثر مرونة
                     maxZoom: 10,      // الحد الأقصى للتكبير
-                    gradient: {       // تخصيص التدرج اللوني
+                    minOpacity: 0.3,  // الحد الأدنى للشفافية لزيادة إحساس الاتصال بين النقاط
+                    max: 0.8,         // تقليل الحد الأقصى لجعل النطاقات متصلة دون تباين قوي
+                    gradient: {       // تخصيص التدرج اللوني لزيادة الاتصال بين النقاط
                         0.2: 'blue',
                         0.4: 'lime',
                         0.6: 'yellow',
