@@ -6,15 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
+        /* جعل الخريطة تملأ الشاشة بالكامل */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
         }
         #map {
-            height: 100%;
-            width: 100%;
+            height: 100%; /* ملء ارتفاع النافذة */
+            width: 100%; /* ملء عرض النافذة */
         }
+        /* تنسيق النص في الزاوية السفلى اليمنى */
         .info {
             position: absolute;
             bottom: 20px;
@@ -23,7 +25,7 @@
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 1000; /* تأكد من ظهور النص فوق الخريطة */
         }
     </style>
 </head>
@@ -31,66 +33,58 @@
     <div id="map"></div>
     <div class="info" id="infoBox">عدد الخانات: 0</div> <!-- نص العدد -->
     
+    <!-- مكتبة Leaflet -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- مكتبة Heatmap الخاصة بـ Leaflet -->
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script>
-        var map = L.map('map').setView([24.7136, 46.6753], 6);
+        // إعداد الخريطة وتحديد المركز الافتراضي
+        var map = L.map('map').setView([24.7136, 46.6753], 6);  // مركز الخريطة: الرياض
 
+        // إضافة طبقة OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // إضافة طبقة الحدود الجغرافية
-        var borders;
-        fetch('https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/110m/physical/ne_110m_coastline.json')
-            .then(response => response.json())
-            .then(data => {
-                borders = L.geoJSON(data, {
-                    style: {
-                        color: '#0000FF',
-                        weight: 2,
-                        fillOpacity: 0
-                    }
-                }).addTo(map);
-            });
-
+        // دالة لحساب عدد تكرارات كل إحداثية
         function calculateOccurrences(data) {
             const occurrences = {};
             data.forEach(point => {
-                const key = point[0] + ',' + point[1];
+                const key = point[0] + ',' + point[1];  // الجمع بين خطوط العرض والطول كمفتاح
                 if (occurrences[key]) {
-                    occurrences[key] += 1;
+                    occurrences[key] += 1;  // زيادة التكرار إذا كانت الإحداثية موجودة مسبقًا
                 } else {
-                    occurrences[key] = 1;
+                    occurrences[key] = 1;   // تعيين التكرار الأول
                 }
             });
             return occurrences;
         }
 
-        fetch('updated_yfull_ffhaplogroups.json')
+        // استقدام البيانات من ملف JSON
+        fetch('updated_yfull_ffhaplogroups.json')  // تأكد من أن ملف JSON في نفس المسار
             .then(response => response.json())
             .then(data => {
+                // تحديث عدد الخانات في النص
                 document.getElementById('infoBox').innerText = `عدد الخانات: ${data.length}`;
 
+                // حساب تكرار كل إحداثية
                 const occurrences = calculateOccurrences(data);
 
                 // تحويل البيانات لتناسب الخريطة الحرارية مع ضبط الحجم بناءً على التكرار
                 const heatData = data.map(point => {
                     const key = point[0] + ',' + point[1];
-                    const intensity = occurrences[key];
+                    const intensity = occurrences[key];  // استخدام التكرار كـ intensity
                     return [point[0], point[1], intensity];
-                }).filter(point => {
-                    // تحقق مما إذا كانت النقطة داخل الحدود
-                    return borders.getBounds().contains(L.latLng(point[0], point[1]));
                 });
 
+                // إضافة الخريطة الحرارية مع ضبط التمغنط بين النقاط
                 var heat = L.heatLayer(heatData, {
-                    radius: 35,
-                    blur: 30,
-                    maxZoom: 10,
-                    minOpacity: 0.4,
-                    max: 2.0,
-                    gradient: {
+                    radius: 35,       // نصف القطر يزيد مع التكرار
+                    blur: 30,         // تمويه لزيادة التداخل بين النطاقات
+                    maxZoom: 20,      // الحد الأقصى للتكبير
+                    minOpacity: 0.2,  // تقليل الشفافية لزيادة وضوح النقاط المتصلة
+                    max: 1.0,         // زيادة الحد الأقصى لزيادة حجم النطاقات
+                    gradient: {       // تخصيص التدرج اللوني
                         0.2: 'blue',
                         0.4: 'lime',
                         0.6: 'yellow',
