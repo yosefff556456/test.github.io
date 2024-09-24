@@ -6,8 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
-        #map { height: 600px; width: 100%; }
-    </style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100%; /* ملء ارتفاع النافذة */
+            width: 100%; /* ملء عرض النافذة */
+        }    </style>
 </head>
 <body>
     <div id="map"></div>
