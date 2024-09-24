@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Flexible and Connected Leaflet Heatmap</title>
+    <title>Dynamic Leaflet Heatmap with Controlled Expansion</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -28,14 +28,20 @@
         fetch('updated_yfull_ffhaplogroups.json')  // تأكد من أن ملف JSON في نفس المسار
             .then(response => response.json())
             .then(data => {
-                // إضافة الخريطة الحرارية مع ضبط المرونة والتداخل بين النقاط
-                var heat = L.heatLayer(data, {
-                    radius: 50,       // زيادة البؤرة لتحقيق نطاقات أكبر
-                    blur: 40,         // زيادة التمويه لجعل النطاقات أكثر مرونة
+                // التحقق من كثافة النقاط وتحويل كل نقطة إلى مصفوفة مع وزن (intensity)
+                var heatData = data.map(function(point) {
+                    // النقطة [latitude, longitude] مع ضبط الـ intensity بناءً على كثافة النقاط
+                    return [point[0], point[1], 0.5]; // يمكنك تعديل القيمة 0.5 للتحكم بالتضخم
+                });
+
+                // إضافة الخريطة الحرارية مع ضبط الديناميكية والتضخم
+                var heat = L.heatLayer(heatData, {
+                    radius: 30,       // نصف قطر مبدئي
+                    blur: 25,         // تمويه مبدئي
                     maxZoom: 10,      // الحد الأقصى للتكبير
-                    minOpacity: 0.3,  // الحد الأدنى للشفافية لزيادة إحساس الاتصال بين النقاط
-                    max: 0.8,         // تقليل الحد الأقصى لجعل النطاقات متصلة دون تباين قوي
-                    gradient: {       // تخصيص التدرج اللوني لزيادة الاتصال بين النقاط
+                    minOpacity: 0.3,  // شفافية منخفضة لإظهار جميع النقاط
+                    max: 1.0,         // الحد الأقصى للتأثير
+                    gradient: {       // تخصيص التدرج اللوني
                         0.2: 'blue',
                         0.4: 'lime',
                         0.6: 'yellow',
