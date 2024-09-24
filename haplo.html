@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
+        /* جعل الخريطة تملأ الشاشة بالكامل */
         html, body {
             height: 100%;
             margin: 0;
@@ -14,10 +15,24 @@
         #map {
             height: 100%; /* ملء ارتفاع النافذة */
             width: 100%; /* ملء عرض النافذة */
-        }    </style>
+        }
+        /* تنسيق النص في الزاوية السفلى اليمنى */
+        .info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000; /* تأكد من ظهور النص فوق الخريطة */
+        }
+    </style>
 </head>
 <body>
     <div id="map"></div>
+    <div class="info" id="infoBox">عدد الخانات: 0</div> <!-- نص العدد -->
+    
     <!-- مكتبة Leaflet -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <!-- مكتبة Heatmap الخاصة بـ Leaflet -->
@@ -49,6 +64,9 @@
         fetch('updated_yfull_ffhaplogroups.json')  // تأكد من أن ملف JSON في نفس المسار
             .then(response => response.json())
             .then(data => {
+                // تحديث عدد الخانات في النص
+                document.getElementById('infoBox').innerText = `عدد الخانات: ${data.length}`;
+
                 // حساب تكرار كل إحداثية
                 const occurrences = calculateOccurrences(data);
 
