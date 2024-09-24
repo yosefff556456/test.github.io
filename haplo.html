@@ -6,17 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
-        /* جعل الخريطة تملأ الشاشة بالكامل */
         html, body {
             height: 100%;
             margin: 0;
             padding: 0;
         }
         #map {
-            height: 100%; /* ملء ارتفاع النافذة */
-            width: 100%; /* ملء عرض النافذة */
+            height: 100%;
+            width: 100%;
         }
-        /* تنسيق النص في الزاوية السفلى اليمنى */
         .info {
             position: absolute;
             bottom: 20px;
@@ -25,70 +23,76 @@
             padding: 10px;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000; /* تأكد من ظهور النص فوق الخريطة */
+            z-index: 1000;
+        }
+        .controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
+    <div class="controls">
+        <button onclick="toggleHeatmap()">Toggle Heatmap</button>
+    </div>
     <div id="map"></div>
-    <div class="info" id="infoBox">عدد الخانات: 0</div> <!-- نص العدد -->
+    <div class="info" id="infoBox">عدد الخانات: 0</div>
     
-    <!-- مكتبة Leaflet -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <!-- مكتبة Heatmap الخاصة بـ Leaflet -->
     <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
     <script>
-        // إعداد الخريطة وتحديد المركز الافتراضي
-        var map = L.map('map').setView([24.7136, 46.6753], 6);  // مركز الخريطة: الرياض
+        var map = L.map('map').setView([24.7136, 46.6753], 6);
 
-        // إضافة طبقة OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // دالة لحساب عدد تكرارات كل إحداثية
         function calculateOccurrences(data) {
             const occurrences = {};
             data.forEach(point => {
-                const key = point[0] + ',' + point[1];  // الجمع بين خطوط العرض والطول كمفتاح
-                if (occurrences[key]) {
-                    occurrences[key] += 1;  // زيادة التكرار إذا كانت الإحداثية موجودة مسبقًا
-                } else {
-                    occurrences[key] = 1;   // تعيين التكرار الأول
-                }
+                const key = point[0] + ',' + point[1];
+                occurrences[key] = (occurrences[key] || 0) + 1;
             });
             return occurrences;
         }
 
-        // استقدام البيانات من ملف JSON
-        fetch('updated_yfull_ffhaplogroups.json')  // تأكد من أن ملف JSON في نفس المسار
+        let heatLayer;  // طبقة الحرارة
+        let isHeatmapVisible = true;
+
+        function toggleHeatmap() {
+            if (isHeatmapVisible) {
+                map.removeLayer(heatLayer);
+            } else {
+                map.addLayer(heatLayer);
+            }
+            isHeatmapVisible = !isHeatmapVisible;
+        }
+
+        fetch('updated_yfull_ffhaplogroups.json')
             .then(response => response.json())
             .then(data => {
-                // تحديث عدد الخانات في النص
                 document.getElementById('infoBox').innerText = `عدد الخانات: ${data.length}`;
-
-                // حساب تكرار كل إحداثية
                 const occurrences = calculateOccurrences(data);
 
-                // تحويل البيانات لتناسب الخريطة الحرارية مع ضبط الحجم بناءً على التكرار
                 const heatData = data.map(point => {
                     const key = point[0] + ',' + point[1];
-                    const intensity = occurrences[key];  // استخدام التكرار كـ intensity
+                    const intensity = occurrences[key];
                     return [point[0], point[1], intensity];
                 });
 
-                // إضافة الخريطة الحرارية مع ضبط التمغنط بين النقاط
-                var heat = L.heatLayer(heatData, {
-                    radius: 20,       // نصف القطر مصغر للتقارب
-                    blur: 40,         // زيادة التمويه لدمج النطاقات بشكل أكبر
-                    maxZoom: 10,      // الحد الأقصى للتكبير
-                    minOpacity: 0.4,  // تقليل الشفافية لزيادة وضوح النقاط المتصلة
-                    max: 2.0,         // زيادة الحد الأقصى لزيادة حجم النطاقات
-                    gradient: {       // تخصيص التدرج اللوني
+                heatLayer = L.heatLayer(heatData, {
+                    radius: 15,       // حجم النقاط
+                    blur: 25,         // تمويه أكبر
+                    maxZoom: 10,
+                    minOpacity: 0.5,
+                    max: 3.0,         // زيادة الحجم
+                    gradient: {
                         0.2: 'blue',
-                        0.4: 'lime',
-                        0.6: 'yellow',
-                        0.8: 'orange',
+                        0.4: 'cyan',
+                        0.6: 'lime',
+                        0.8: 'yellow',
                         1.0: 'red'
                     }
                 }).addTo(map);
