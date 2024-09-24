@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dynamic Leaflet Heatmap with Controlled Expansion</title>
+    <title>Enhanced Dynamic Leaflet Heatmap</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -24,23 +24,41 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        // دالة لحساب عدد تكرارات كل إحداثية
+        function calculateOccurrences(data) {
+            const occurrences = {};
+            data.forEach(point => {
+                const key = point[0] + ',' + point[1];  // الجمع بين خطوط العرض والطول كمفتاح
+                if (occurrences[key]) {
+                    occurrences[key] += 1;  // زيادة التكرار إذا كانت الإحداثية موجودة مسبقًا
+                } else {
+                    occurrences[key] = 1;   // تعيين التكرار الأول
+                }
+            });
+            return occurrences;
+        }
+
         // استقدام البيانات من ملف JSON
         fetch('updated_yfull_ffhaplogroups.json')  // تأكد من أن ملف JSON في نفس المسار
             .then(response => response.json())
             .then(data => {
-                // التحقق من كثافة النقاط وتحويل كل نقطة إلى مصفوفة مع وزن (intensity)
-                var heatData = data.map(function(point) {
-                    // النقطة [latitude, longitude] مع ضبط الـ intensity بناءً على كثافة النقاط
-                    return [point[0], point[1], 0.5]; // يمكنك تعديل القيمة 0.5 للتحكم بالتضخم
+                // حساب تكرار كل إحداثية
+                const occurrences = calculateOccurrences(data);
+
+                // تحويل البيانات لتناسب الخريطة الحرارية مع ضبط الحجم بناءً على التكرار
+                const heatData = data.map(point => {
+                    const key = point[0] + ',' + point[1];
+                    const intensity = occurrences[key];  // استخدام التكرار كـ intensity
+                    return [point[0], point[1], intensity];
                 });
 
-                // إضافة الخريطة الحرارية مع ضبط الديناميكية والتضخم
+                // إضافة الخريطة الحرارية مع ضبط التمغنط بين النقاط
                 var heat = L.heatLayer(heatData, {
-                    radius: 30,       // نصف قطر مبدئي
-                    blur: 25,         // تمويه مبدئي
+                    radius: 35,       // نصف القطر يزيد مع التكرار
+                    blur: 30,         // تمويه لزيادة التداخل بين النطاقات
                     maxZoom: 10,      // الحد الأقصى للتكبير
-                    minOpacity: 0.3,  // شفافية منخفضة لإظهار جميع النقاط
-                    max: 1.0,         // الحد الأقصى للتأثير
+                    minOpacity: 0.4,  // تقليل الشفافية لزيادة وضوح النقاط المتصلة
+                    max: 2.0,         // زيادة الحد الأقصى لزيادة حجم النطاقات
                     gradient: {       // تخصيص التدرج اللوني
                         0.2: 'blue',
                         0.4: 'lime',
