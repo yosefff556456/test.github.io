@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Dynamic Leaflet Heatmap</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        .info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info" id="infoBox">عدد الخانات: 0</div> <!-- نص العدد -->
+    
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script>
+        var map = L.map('map').setView([24.7136, 46.6753], 6);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // إضافة طبقة الحدود الجغرافية
+        var borders;
+        fetch('https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/110m/physical/ne_110m_coastline.json')
+            .then(response => response.json())
+            .then(data => {
+                borders = L.geoJSON(data, {
+                    style: {
+                        color: '#0000FF',
+                        weight: 2,
+                        fillOpacity: 0
+                    }
+                }).addTo(map);
+            });
+
+        function calculateOccurrences(data) {
+            const occurrences = {};
+            data.forEach(point => {
+                const key = point[0] + ',' + point[1];
+                if (occurrences[key]) {
+                    occurrences[key] += 1;
+                } else {
+                    occurrences[key] = 1;
+                }
+            });
+            return occurrences;
+        }
+
+        fetch('updated_yfull_ffhaplogroups.json')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('infoBox').innerText = `عدد الخانات: ${data.length}`;
+
+                const occurrences = calculateOccurrences(data);
+
+                // تحويل البيانات لتناسب الخريطة الحرارية مع ضبط الحجم بناءً على التكرار
+                const heatData = data.map(point => {
+                    const key = point[0] + ',' + point[1];
+                    const intensity = occurrences[key];
+                    return [point[0], point[1], intensity];
+                }).filter(point => {
+                    // تحقق مما إذا كانت النقطة داخل الحدود
+                    return borders.getBounds().contains(L.latLng(point[0], point[1]));
+                });
+
+                var heat = L.heatLayer(heatData, {
+                    radius: 35,
+                    blur: 30,
+                    maxZoom: 10,
+                    minOpacity: 0.4,
+                    max: 2.0,
+                    gradient: {
+                        0.2: 'blue',
+                        0.4: 'lime',
+                        0.6: 'yellow',
+                        0.8: 'orange',
+                        1.0: 'red'
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error('Error fetching JSON:', error));
+    </script>
+</body>
+</html>
