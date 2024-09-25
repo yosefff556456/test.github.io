@@ -81,7 +81,9 @@
                 var heat = L.heatLayer(heatData, {
                     radius: 35,       // نصف القطر يزيد مع التكرار
                     blur: 30,         // تمويه لزيادة التداخل بين النطاقات
-        
+                         maxZoom: 10,
+                    minOpacity: 0.4,
+                    max: 2.0,
                     gradient: {       // تخصيص التدرج اللوني
                         0.2: 'blue',
                         0.4: 'lime',
