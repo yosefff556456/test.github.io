@@ -41,24 +41,21 @@
             border-radius: 1em;
             border: 2px solid var(--border-color);
             box-shadow: 0 2px 4px var(--shadow-color);
-            transition: all 0.3s ease;
-            transform-origin: center center;
+            position: absolute !important;
+            transform: none !important;
+            transition: none !important;
             pointer-events: none;
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-font-smoothing: antialiased;
+            user-select: none;
         }
 
         .city-label, .important-city-label {
-            position: relative;
+            position: absolute !important;
             text-align: center;
             font-weight: 700;
-            cursor: pointer;
-            transform-origin: center bottom;
-            pointer-events: auto;
-            will-change: transform;
-            backface-visibility: hidden;
-            -webkit-font-smoothing: antialiased;
+            transform: none !important;
+            transition: none !important;
+            pointer-events: none;
+            user-select: none;
         }
 
         .city-label::before, .important-city-label::before {
@@ -67,11 +64,11 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            margin: 0 auto 6px auto;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
-            bottom: -8px;
+            bottom: 100%;
+            margin-bottom: 3px;
         }
 
         .city-label::before {
@@ -165,17 +162,18 @@
         const map = L.map('map', {
             center: [27, 45],
             zoom: 5,
-            minZoom: 3,
-            maxZoom: 8,
-            zoomControl: true,
-            zoomAnimation: true,
-            worldCopyJump: true,
-            zoomSnap: 0.1,
-            zoomDelta: 0.5,
-            wheelDebounceTime: 40,
-            wheelPxPerZoomLevel: 60,
-            tapTolerance: 15,
-            bounceAtZoomLimits: false
+            minZoom: 5,
+            maxZoom: 5,
+            zoomControl: false,
+            dragging: false,
+            touchZoom: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            zoomAnimation: false,
+            fadeAnimation: false,
+            markerZoomAnimation: false
         });
 
         // إضافة طبقة الخريطة مع تحسين الجودة
@@ -225,12 +223,6 @@
             updateTimeout = setTimeout(updateMarkerVisibility, 100);
         });
 
-        // دالة لفتح خرائط قوقل
-        function openGoogleMaps(lat, lng, cityName) {
-            const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-            window.open(url, '_blank');
-        }
-
         // جلب وتحميل البيانات
         fetch('data.json')
             .then(response => response.json())
@@ -270,10 +262,6 @@
                         icon: divIcon
                     }).addTo(map);
                     
-                    marker.on('click', () => {
-                        openGoogleMaps(city.coords[0], city.coords[1], city.name);
-                    });
-                    
                     markers.cities.push(marker);
                 });
 
@@ -287,10 +275,6 @@
                     const marker = L.marker(city.coords, {
                         icon: divIcon
                     }).addTo(map);
-                    
-                    marker.on('click', () => {
-                        openGoogleMaps(city.coords[0], city.coords[1], city.name);
-                    });
                     
                     markers.importantCities.push(marker);
                 });
