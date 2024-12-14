@@ -162,17 +162,13 @@
         const map = L.map('map', {
             center: [27, 45],
             zoom: 5,
-            minZoom: 5,
-            maxZoom: 5,
-            zoomControl: false,
-            dragging: false,
-            touchZoom: false,
-            scrollWheelZoom: false,
-            doubleClickZoom: false,
-            boxZoom: false,
-            keyboard: false,
-            zoomAnimation: false,
-            fadeAnimation: false,
+            minZoom: 3,
+            maxZoom: 8,
+            zoomControl: true,
+            zoomAnimation: true,
+            worldCopyJump: true,
+            zoomSnap: 0,
+            zoomDelta: 0.1,
             markerZoomAnimation: false
         });
 
@@ -180,7 +176,8 @@
         const baseMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             subdomains: 'abcd',
-            maxZoom: 8
+            maxZoom: 8,
+            noWrap: true
         }).addTo(map);
 
         const markers = {
@@ -188,6 +185,15 @@
             lines: [],
             cities: [],
             importantCities: []
+        };
+
+        const createDivIcon = (className, html) => {
+            return L.divIcon({
+                className: className,
+                html: html,
+                iconSize: null,
+                iconAnchor: [0, 0]
+            });
         };
 
         const zoomLevels = {
@@ -237,10 +243,7 @@
                         smoothFactor: 1.5
                     }).addTo(map);
                     
-                    const divIcon = L.divIcon({
-                        className: 'region-label',
-                        html: region.name
-                    });
+                    const divIcon = createDivIcon('region-label', region.name);
                     
                     const marker = L.marker(region.labelCoords, {
                         icon: divIcon,
@@ -253,13 +256,12 @@
 
                 // إضافة المدن العادية
                 data.cities.forEach(city => {
-                    const divIcon = L.divIcon({
-                        className: 'city-label',
-                        html: `<span>${city.name}</span>`
-                    });
-                    
+                    const divIcon = createDivIcon('city-label', `<span>${city.name}</span>`);
                     const marker = L.marker(city.coords, {
-                        icon: divIcon
+                        icon: divIcon,
+                        interactive: true,
+                        bubblingMouseEvents: false,
+                        pane: 'markerPane'
                     }).addTo(map);
                     
                     markers.cities.push(marker);
@@ -267,13 +269,12 @@
 
                 // إضافة المدن المهمة
                 data.importantCities.forEach(city => {
-                    const divIcon = L.divIcon({
-                        className: 'important-city-label',
-                        html: `<span>${city.name}</span>`
-                    });
-                    
+                    const divIcon = createDivIcon('important-city-label', `<span>${city.name}</span>`);
                     const marker = L.marker(city.coords, {
-                        icon: divIcon
+                        icon: divIcon,
+                        interactive: true,
+                        bubblingMouseEvents: false,
+                        pane: 'markerPane'
                     }).addTo(map);
                     
                     markers.importantCities.push(marker);
