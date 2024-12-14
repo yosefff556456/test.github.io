@@ -49,15 +49,18 @@
             text-align: center;
             font-weight: 700;
             pointer-events: none;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
         }
 
         .city-label::before, .important-city-label::before {
             content: '';
             display: block;
-            width: 6px;
-            height: 6px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            margin: 0 auto 4px auto;
+            margin: 0 auto 6px auto;
         }
 
         .city-label::before {
@@ -66,57 +69,38 @@
 
         .important-city-label::before {
             background-color: var(--important-city-dot-color);
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
         }
 
         .city-label span, .important-city-label span {
             background-color: rgba(255, 255, 255, 0.9);
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
             white-space: nowrap;
             display: block;
         }
 
-        /* إخفاء أي عناصر غير مرغوبة */
+        /* إخفاء أي عناصر غير مرغوبة بشكل صارم */
         .leaflet-marker-icon {
-            background: none !important;
+            background: transparent !important;
             border: none !important;
             box-shadow: none !important;
         }
 
-        .leaflet-control-zoom {
+        .leaflet-marker-icon > * {
+            background: transparent !important;
             border: none !important;
-            box-shadow: 0 2px 4px var(--shadow-color) !important;
+            box-shadow: none !important;
         }
 
-        .leaflet-control-zoom a {
-            background: var(--label-bg) !important;
-            color: var(--region-color) !important;
-            border: 1px solid var(--border-color) !important;
+        .leaflet-marker-pane > * {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
         }
 
-        .leaflet-control-zoom a:hover {
-            background: #f8f9fa !important;
-        }
-
-        /* إخفاء أسماء الخريطة الأصلية */
-        .leaflet-tile-loaded {
-            filter: grayscale(20%) brightness(105%);
-        }
-
-        /* إخفاء كل النصوص الأصلية */
-        [class*="leaflet-tile-container"] [class*="label"],
-        [class*="leaflet-tile-container"] [class*="Label"],
-        [class*="leaflet-tile-container"] [class*="text"],
-        [class*="leaflet-tile-container"] [class*="Text"] {
-            display: none !important;
-            opacity: 0 !important;
-            visibility: hidden !important;
-        }
-
-        /* تحسينات للشاشات المختلفة */
         @media (max-width: 1200px) {
             .region-label {
                 font-size: 1.4em;
@@ -128,6 +112,22 @@
             .region-label {
                 font-size: 1.2em;
                 padding: 0.3em 0.6em;
+            }
+
+            .city-label::before, .important-city-label::before {
+                width: 8px;
+                height: 8px;
+                margin: 0 auto 4px auto;
+            }
+
+            .important-city-label::before {
+                width: 10px;
+                height: 10px;
+            }
+
+            .city-label span, .important-city-label span {
+                padding: 4px 8px;
+                font-size: 12px;
             }
         }
 
@@ -236,12 +236,19 @@
                     const divIcon = L.divIcon({
                         className: 'city-label',
                         html: `<span>${city.name}</span>`,
-                        iconSize: [0, 0],
-                        iconAnchor: [0, 0]
+                        iconSize: null,
+                        iconAnchor: null,
+                        popupAnchor: null,
+                        shadowSize: null,
+                        shadowAnchor: null,
+                        className: 'city-label'
                     });
                     
                     const marker = L.marker(city.coords, {
-                        icon: divIcon
+                        icon: divIcon,
+                        interactive: false,
+                        keyboard: false,
+                        riseOnHover: false
                     }).addTo(map);
                     
                     markers.cities.push(marker);
@@ -252,12 +259,19 @@
                     const divIcon = L.divIcon({
                         className: 'important-city-label',
                         html: `<span>${city.name}</span>`,
-                        iconSize: [0, 0],
-                        iconAnchor: [0, 0]
+                        iconSize: null,
+                        iconAnchor: null,
+                        popupAnchor: null,
+                        shadowSize: null,
+                        shadowAnchor: null,
+                        className: 'important-city-label'
                     });
                     
                     const marker = L.marker(city.coords, {
-                        icon: divIcon
+                        icon: divIcon,
+                        interactive: false,
+                        keyboard: false,
+                        riseOnHover: false
                     }).addTo(map);
                     
                     markers.importantCities.push(marker);
