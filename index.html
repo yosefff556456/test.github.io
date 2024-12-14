@@ -42,6 +42,11 @@
             border: 2px solid var(--border-color);
             box-shadow: 0 2px 4px var(--shadow-color);
             transition: all 0.3s ease;
+            transform-origin: center center;
+            pointer-events: none;
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .city-label, .important-city-label {
@@ -49,6 +54,11 @@
             text-align: center;
             font-weight: 700;
             cursor: pointer;
+            transform-origin: center bottom;
+            pointer-events: auto;
+            will-change: transform;
+            backface-visibility: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .city-label::before, .important-city-label::before {
@@ -58,6 +68,10 @@
             height: 10px;
             border-radius: 50%;
             margin: 0 auto 6px auto;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -8px;
         }
 
         .city-label::before {
@@ -155,7 +169,13 @@
             maxZoom: 8,
             zoomControl: true,
             zoomAnimation: true,
-            worldCopyJump: true
+            worldCopyJump: true,
+            zoomSnap: 0.1,
+            zoomDelta: 0.5,
+            wheelDebounceTime: 40,
+            wheelPxPerZoomLevel: 60,
+            tapTolerance: 15,
+            bounceAtZoomLimits: false
         });
 
         // إضافة طبقة الخريطة مع تحسين الجودة
