@@ -93,6 +93,8 @@
             font-size: 0.9em;
             white-space: nowrap;
             box-shadow: 0 1px 3px var(--shadow-color);
+            z-index: 1000;
+            position: relative;
         }
 
         .leaflet-container {
@@ -111,6 +113,35 @@
                 rgba(0, 0, 0, 1) 10%,
                 rgba(0, 0, 0, 1) 90%,
                 rgba(0, 0, 0, 0) 100%);
+        }
+
+        /* إخفاء أسماء الخريطة الأصلية */
+        .leaflet-tile-loaded {
+            filter: grayscale(20%) brightness(105%);
+        }
+        
+        /* إخفاء النصوص الأصلية في الخريطة */
+        .leaflet-tile-container {
+            -webkit-mask-image: linear-gradient(to right,
+                rgba(0, 0, 0, 0) 0%,
+                rgba(0, 0, 0, 1) 10%,
+                rgba(0, 0, 0, 1) 90%,
+                rgba(0, 0, 0, 0) 100%);
+            mask-image: linear-gradient(to right,
+                rgba(0, 0, 0, 0) 0%,
+                rgba(0, 0, 0, 1) 10%,
+                rgba(0, 0, 0, 1) 90%,
+                rgba(0, 0, 0, 0) 100%);
+        }
+
+        /* إخفاء كل النصوص الأصلية */
+        [class*="leaflet-tile-container"] [class*="label"],
+        [class*="leaflet-tile-container"] [class*="Label"],
+        [class*="leaflet-tile-container"] [class*="text"],
+        [class*="leaflet-tile-container"] [class*="Text"] {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
         }
 
         /* تحسينات للشاشات المختلفة */
@@ -189,7 +220,7 @@
         });
 
         // إضافة طبقة الخريطة مع تحسين الجودة
-        const baseMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        const baseMap = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             subdomains: 'abcd',
             maxZoom: 8,
