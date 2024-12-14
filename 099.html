@@ -48,10 +48,6 @@
             position: relative;
             text-align: center;
             font-weight: 700;
-            pointer-events: none;
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
         }
 
         .city-label::before, .important-city-label::before {
@@ -235,20 +231,11 @@
                 data.cities.forEach(city => {
                     const divIcon = L.divIcon({
                         className: 'city-label',
-                        html: `<span>${city.name}</span>`,
-                        iconSize: null,
-                        iconAnchor: null,
-                        popupAnchor: null,
-                        shadowSize: null,
-                        shadowAnchor: null,
-                        className: 'city-label'
+                        html: `<span>${city.name}</span>`
                     });
                     
                     const marker = L.marker(city.coords, {
-                        icon: divIcon,
-                        interactive: false,
-                        keyboard: false,
-                        riseOnHover: false
+                        icon: divIcon
                     }).addTo(map);
                     
                     markers.cities.push(marker);
@@ -258,20 +245,11 @@
                 data.importantCities.forEach(city => {
                     const divIcon = L.divIcon({
                         className: 'important-city-label',
-                        html: `<span>${city.name}</span>`,
-                        iconSize: null,
-                        iconAnchor: null,
-                        popupAnchor: null,
-                        shadowSize: null,
-                        shadowAnchor: null,
-                        className: 'important-city-label'
+                        html: `<span>${city.name}</span>`
                     });
                     
                     const marker = L.marker(city.coords, {
-                        icon: divIcon,
-                        interactive: false,
-                        keyboard: false,
-                        riseOnHover: false
+                        icon: divIcon
                     }).addTo(map);
                     
                     markers.importantCities.push(marker);
