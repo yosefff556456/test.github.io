@@ -31,15 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const regionLabels = [];
             const regionPolygons = [];
 
-            // Add regions with transparent borders
+            // Add regions with borders only
             data.regions.forEach(region => {
                 // Add region border
                 const polygon = L.polygon(region.coords, {
                     color: '#ffffff',
                     weight: 2,
-                    opacity: 0.7,
-                    fillOpacity: 0,
-                    dashArray: '5, 5'
+                    opacity: 0.8,
+                    fill: false
                 }).addTo(map);
                 regionPolygons.push(polygon);
 
@@ -53,25 +52,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 regionLabels.push(label);
             });
 
-            // Add cities
-            data.cities.forEach(city => {
-                const marker = L.marker(city.coords, {
+            // Add cities with labels
+            function createCityMarker(city, isImportant) {
+                const markerHtml = `
+                    <div class="marker-container">
+                        <div class="${isImportant ? 'important-city-marker' : 'city-marker'}"></div>
+                        <div class="city-label">${city.name}</div>
+                    </div>`;
+
+                return L.marker(city.coords, {
                     icon: L.divIcon({
-                        className: 'city-label',
-                        html: city.name
+                        className: '',
+                        html: markerHtml,
+                        iconSize: [100, 40],
+                        iconAnchor: [50, 0]
                     })
-                }).addTo(map);
+                });
+            }
+
+            // Add regular cities
+            data.cities.forEach(city => {
+                const marker = createCityMarker(city, false).addTo(map);
                 markers.push(marker);
             });
 
             // Add important cities
             data.importantCities.forEach(city => {
-                const marker = L.marker(city.coords, {
-                    icon: L.divIcon({
-                        className: 'important-city-label',
-                        html: city.name
-                    })
-                }).addTo(map);
+                const marker = createCityMarker(city, true).addTo(map);
                 markers.push(marker);
             });
 
@@ -99,19 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Adjust region border opacity
                 regionPolygons.forEach(polygon => {
-                    if (currentZoom <= 6) {
-                        polygon.setStyle({ 
-                            opacity: 0.7,
-                            weight: 2,
-                            dashArray: '5, 5'
-                        });
-                    } else {
-                        polygon.setStyle({ 
-                            opacity: 0.3,
-                            weight: 1,
-                            dashArray: '3, 3'
-                        });
-                    }
+                    polygon.setStyle({ opacity: currentZoom <= 6 ? 0.8 : 0.4 });
                 });
             });
         })

@@ -12,74 +12,62 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
         #map {
             height: 100%;
             width: 100%;
         }
-        .region-label {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #000;
+        .city-marker {
+            width: 8px;
+            height: 8px;
+            background-color: #ff4444;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.4);
+        }
+        .important-city-marker {
+            width: 10px;
+            height: 10px;
+            background-color: #2c3e50;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 4px rgba(0,0,0,0.4);
+        }
+        .city-label {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: #333;
             text-align: center;
             white-space: nowrap;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 0.3em 0.5em;
-            border-radius: 0.5em;
-            border: 1px solid #ccc;
+            margin-top: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-
-        .city-label, .important-city-label {
-            display: inline-block;
-            position: absolute;
-            font-weight: bold;
-            text-align: center; 
-            color: black; 
-            white-space: nowrap;
-            border-radius: 0.5em;
+        .region-label {
             background: rgba(255, 255, 255, 0.9);
-            padding: 0.4em 0.6em;
-            font-size: 1.2em;
-            border: 1px solid #ddd;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 14px;
+            color: #333;
+            text-align: center;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
-
-        /* المدن العادية: النقطة حمراء */
-        .city-label::before {
-            content: '';
-            display: block;
-            width: 1em;
-            height: 1em;
-            background-color: red; 
-            border-radius: 50%;
-            margin: 0.3em auto 0.4em auto; 
-        }
-
-        /* المدن المهمة: النقطة سوداء */
-        .important-city-label::before {
-            content: '';
-            display: block;
-            width: 1em;
-            height: 1em;
-            background-color: black; 
-            border-radius: 50%;
-            margin: 0.3em auto 0.4em auto; 
-        }
-
-        /* تحسين قابلية القراءة على الشاشات المختلفة */
-        @media (max-width: 600px) {
-            .region-label {
-                font-size: 1.2em;
-            }
-            .city-label, .important-city-label {
-                font-size: 1em;
-            }
+        .marker-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="data.js"></script>
     <script src="map.js"></script>
 </body>
 </html>
