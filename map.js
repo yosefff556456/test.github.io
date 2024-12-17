@@ -61,12 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         html: city.name
                     })
                 }).addTo(map);
-
-                // Add Google Maps link
-                marker.on('click', () => {
-                    window.open(`https://www.google.com/maps/search/?api=1&query=${city.coords[0]},${city.coords[1]}`, '_blank');
-                });
-
                 markers.push(marker);
             });
 
@@ -78,12 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         html: city.name
                     })
                 }).addTo(map);
-
-                // Add Google Maps link
-                marker.on('click', () => {
-                    window.open(`https://www.google.com/maps/search/?api=1&query=${city.coords[0]},${city.coords[1]}`, '_blank');
-                });
-
                 markers.push(marker);
             });
 
