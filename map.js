@@ -53,31 +53,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 regionLabels.push(label);
             });
 
-            // Function to create city marker with Google Maps link
-            function createCityMarker(city, isImportant) {
+            // Add cities
+            data.cities.forEach(city => {
                 const marker = L.marker(city.coords, {
                     icon: L.divIcon({
-                        className: isImportant ? 'important-city-label' : 'city-label',
+                        className: 'city-label',
                         html: city.name
                     })
-                });
+                }).addTo(map);
 
+                // Add Google Maps link
                 marker.on('click', () => {
                     window.open(`https://www.google.com/maps/search/?api=1&query=${city.coords[0]},${city.coords[1]}`, '_blank');
                 });
 
-                return marker;
-            }
-
-            // Add regular cities
-            data.cities.forEach(city => {
-                const marker = createCityMarker(city, false).addTo(map);
                 markers.push(marker);
             });
 
             // Add important cities
             data.importantCities.forEach(city => {
-                const marker = createCityMarker(city, true).addTo(map);
+                const marker = L.marker(city.coords, {
+                    icon: L.divIcon({
+                        className: 'important-city-label',
+                        html: city.name
+                    })
+                }).addTo(map);
+
+                // Add Google Maps link
+                marker.on('click', () => {
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${city.coords[0]},${city.coords[1]}`, '_blank');
+                });
+
                 markers.push(marker);
             });
 
