@@ -27,62 +27,86 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('data.json')
         .then(response => response.json())
         .then(data => {
-            // Store markers and polygons
             const markers = [];
-            const polygons = [];
+            const regionLabels = [];
+            const regionPolygons = [];
 
-            // Add regions (polygons)
+            // Add regions with borders only
             data.regions.forEach(region => {
+                // Add region border
                 const polygon = L.polygon(region.coords, {
                     color: '#ffffff',
                     weight: 2,
-                    opacity: 0.6,
-                    fillColor: '#ffffff',
-                    fillOpacity: 0.1
+                    opacity: 0.8,
+                    fill: false
                 }).addTo(map);
-                polygons.push(polygon);
-            });
+                regionPolygons.push(polygon);
 
-            // Add cities
-            data.cities.forEach(city => {
-                const marker = L.marker(city.coords, {
+                // Add region label
+                const label = L.marker(region.labelCoords, {
                     icon: L.divIcon({
-                        className: 'city-marker',
-                        iconSize: [8, 8]
+                        className: 'region-label',
+                        html: region.name
                     })
                 }).addTo(map);
+                regionLabels.push(label);
+            });
+
+            // Add cities with labels
+            function createCityMarker(city, isImportant) {
+                const markerHtml = `
+                    <div class="marker-container">
+                        <div class="${isImportant ? 'important-city-marker' : 'city-marker'}"></div>
+                        <div class="city-label">${city.name}</div>
+                    </div>`;
+
+                return L.marker(city.coords, {
+                    icon: L.divIcon({
+                        className: '',
+                        html: markerHtml,
+                        iconSize: [100, 40],
+                        iconAnchor: [50, 0]
+                    })
+                });
+            }
+
+            // Add regular cities
+            data.cities.forEach(city => {
+                const marker = createCityMarker(city, false).addTo(map);
                 markers.push(marker);
             });
 
             // Add important cities
             data.importantCities.forEach(city => {
-                const marker = L.marker(city.coords, {
-                    icon: L.divIcon({
-                        className: 'important-city-marker',
-                        iconSize: [10, 10]
-                    })
-                }).addTo(map);
+                const marker = createCityMarker(city, true).addTo(map);
                 markers.push(marker);
             });
 
-            // Handle zoom levels for marker and region visibility
+            // Handle zoom levels for visibility
             map.on('zoomend', () => {
                 const currentZoom = map.getZoom();
                 
+                // Show/hide region labels and borders
+                regionLabels.forEach(label => {
+                    if (currentZoom <= 6) {
+                        label.getElement().style.display = 'block';
+                    } else {
+                        label.getElement().style.display = 'none';
+                    }
+                });
+
+                // Show/hide city markers and labels
                 markers.forEach(marker => {
-                    if (currentZoom >= 7) {
+                    if (currentZoom > 6) {
                         marker.getElement().style.display = 'block';
                     } else {
                         marker.getElement().style.display = 'none';
                     }
                 });
 
-                polygons.forEach(polygon => {
-                    if (currentZoom >= 6) {
-                        polygon.setStyle({ opacity: 0.6, fillOpacity: 0.1 });
-                    } else {
-                        polygon.setStyle({ opacity: 0.3, fillOpacity: 0.05 });
-                    }
+                // Adjust region border opacity
+                regionPolygons.forEach(polygon => {
+                    polygon.setStyle({ opacity: currentZoom <= 6 ? 0.8 : 0.4 });
                 });
             });
         })
