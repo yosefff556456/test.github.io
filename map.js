@@ -31,14 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const regionLabels = [];
             const regionPolygons = [];
 
-            // Add regions with borders only
+            // Add regions with transparent borders
             data.regions.forEach(region => {
                 // Add region border
                 const polygon = L.polygon(region.coords, {
                     color: '#ffffff',
                     weight: 2,
-                    opacity: 0.8,
-                    fill: false
+                    opacity: 0.7,
+                    fillOpacity: 0,
+                    dashArray: '5, 5'
                 }).addTo(map);
                 regionPolygons.push(polygon);
 
@@ -46,7 +47,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const label = L.marker(region.labelCoords, {
                     icon: L.divIcon({
                         className: 'region-label',
-                        html: region.name
+                        html: region.name,
+                        iconSize: [120, 30],
+                        iconAnchor: [60, 15]
                     })
                 }).addTo(map);
                 regionLabels.push(label);
@@ -64,8 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     icon: L.divIcon({
                         className: '',
                         html: markerHtml,
-                        iconSize: [100, 40],
-                        iconAnchor: [50, 0]
+                        iconSize: [120, 40],
+                        iconAnchor: [60, 0]
                     })
                 });
             }
@@ -106,7 +109,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Adjust region border opacity
                 regionPolygons.forEach(polygon => {
-                    polygon.setStyle({ opacity: currentZoom <= 6 ? 0.8 : 0.4 });
+                    if (currentZoom <= 6) {
+                        polygon.setStyle({ 
+                            opacity: 0.7,
+                            weight: 2,
+                            dashArray: '5, 5'
+                        });
+                    } else {
+                        polygon.setStyle({ 
+                            opacity: 0.3,
+                            weight: 1,
+                            dashArray: '3, 3'
+                        });
+                    }
                 });
             });
         })
