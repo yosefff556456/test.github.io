@@ -55,15 +55,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 regionLabels.push(label);
             });
 
-            // Add cities with labels
+            // Function to create Google Maps URL
+            function createGoogleMapsUrl(coords) {
+                return `https://www.google.com/maps?q=${coords[0]},${coords[1]}`;
+            }
+
+            // Add cities with labels and click handlers
             function createCityMarker(city, isImportant) {
                 const markerHtml = `
-                    <div class="marker-container">
+                    <div class="marker-container" onclick="window.open('${createGoogleMapsUrl(city.coords)}', '_blank')">
                         <div class="${isImportant ? 'important-city-marker' : 'city-marker'}"></div>
                         <div class="city-label">${city.name}</div>
                     </div>`;
 
-                return L.marker(city.coords, {
+                const marker = L.marker(city.coords, {
                     icon: L.divIcon({
                         className: '',
                         html: markerHtml,
@@ -71,6 +76,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         iconAnchor: [60, 0]
                     })
                 });
+
+                // Add click handler for the entire marker
+                marker.on('click', () => {
+                    window.open(createGoogleMapsUrl(city.coords), '_blank');
+                });
+
+                return marker;
             }
 
             // Add regular cities
