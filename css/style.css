@@ -1,0 +1,137 @@
+:root {
+    --region-color: #2c3e50;
+    --city-dot-color: #e74c3c;
+    --important-city-dot-color: #2c3e50;
+    --label-bg: rgba(255, 255, 255, 0.95);
+    --border-color: #bdc3c7;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Base Styles */
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Tajawal', sans-serif;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+/* Region Labels */
+.region-label {
+    font-size: 1.6em;
+    font-weight: 700;
+    color: var(--region-color);
+    text-align: center;
+    white-space: nowrap;
+    background: var(--label-bg);
+    padding: 0.5em 1em;
+    border-radius: 1em;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 2px 4px var(--shadow-color);
+    position: absolute !important;
+    transform: none !important;
+    transition: none !important;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* City Labels */
+.city-label, 
+.important-city-label {
+    position: absolute !important;
+    text-align: center;
+    font-weight: 700;
+    transform: none !important;
+    transition: none !important;
+    pointer-events: none;
+    user-select: none;
+}
+
+.city-label::before, 
+.important-city-label::before {
+    content: '';
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 100%;
+    margin-bottom: 3px;
+}
+
+.city-label::before {
+    background-color: var(--city-dot-color);
+}
+
+.important-city-label::before {
+    background-color: var(--important-city-dot-color);
+    width: 12px;
+    height: 12px;
+}
+
+.city-label span, 
+.important-city-label span {
+    background-color: var(--label-bg);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    white-space: nowrap;
+    display: block;
+    transition: background-color 0.2s;
+}
+
+/* Leaflet Overrides */
+.leaflet-marker-icon,
+.leaflet-marker-icon > *,
+.leaflet-marker-pane > * {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .region-label {
+        font-size: 1.4em;
+        padding: 0.4em 0.8em;
+    }
+}
+
+@media (max-width: 768px) {
+    .region-label {
+        font-size: 1.2em;
+        padding: 0.3em 0.6em;
+    }
+
+    .city-label::before, 
+    .important-city-label::before {
+        width: 8px;
+        height: 8px;
+    }
+
+    .important-city-label::before {
+        width: 10px;
+        height: 10px;
+    }
+
+    .city-label span, 
+    .important-city-label span {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .region-label {
+        font-size: 1em;
+        padding: 0.2em 0.5em;
+    }
+}
