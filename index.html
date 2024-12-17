@@ -12,68 +12,71 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
         #map {
             height: 100%;
             width: 100%;
         }
-        .city-marker {
-            width: 8px;
-            height: 8px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            border: 2px solid #000000;
-            cursor: pointer;
+        .region-label {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+            white-space: nowrap;
         }
-        .important-city-marker {
+
+        .city-label, .important-city-label {
+            display: inline-block;
+            position: relative;
+            font-weight: bold;
+            text-align: center; 
+            color: black; 
+            white-space: nowrap;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding-top: 25px;
+        }
+
+        /* المدن العادية: النقطة حمراء */
+        .city-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 10px;
             height: 10px;
-            background-color: #ffffff;
+            background-color: red; 
             border-radius: 50%;
-            border: 2px solid #000000;
-            cursor: pointer;
         }
-        .city-label {
-            color: #000000;
-            font-size: 14px;
-            font-weight: bold;
-            text-align: center;
-            white-space: nowrap;
-            margin-top: 5px;
-            padding: 2px 6px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 3px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
+
+        /* المدن المهمة: النقطة سوداء */
+        .important-city-label::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: black; 
+            border-radius: 50%;
         }
-        .region-label {
-            color: #000000;
-            font-size: 16px;
-            font-weight: bold;
-            text-align: center;
-            white-space: nowrap;
-            padding: 4px 8px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 3px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-        .marker-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            cursor: pointer;
-        }
-        .marker-container:hover .city-label {
-            background-color: rgba(255, 255, 255, 1);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+
+        @media (max-width: 600px) {
+            .region-label {
+                font-size: 1.2em;
+            }
+            .city-label, .important-city-label {
+                font-size: 1em;
+            }
         }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="data.js"></script>
     <script src="map.js"></script>
 </body>
 </html>

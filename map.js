@@ -47,36 +47,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const label = L.marker(region.labelCoords, {
                     icon: L.divIcon({
                         className: 'region-label',
-                        html: region.name,
-                        iconSize: [120, 30],
-                        iconAnchor: [60, 15]
+                        html: region.name
                     })
                 }).addTo(map);
                 regionLabels.push(label);
             });
 
-            // Add cities with labels and Google Maps links
+            // Function to create city marker with Google Maps link
             function createCityMarker(city, isImportant) {
-                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${city.coords[0]},${city.coords[1]}`;
-                
-                const markerHtml = `
-                    <div class="marker-container">
-                        <div class="${isImportant ? 'important-city-marker' : 'city-marker'}"></div>
-                        <div class="city-label">${city.name}</div>
-                    </div>`;
-
                 const marker = L.marker(city.coords, {
                     icon: L.divIcon({
-                        className: '',
-                        html: markerHtml,
-                        iconSize: [120, 40],
-                        iconAnchor: [60, 0]
+                        className: isImportant ? 'important-city-label' : 'city-label',
+                        html: city.name
                     })
                 });
 
-                // Add click handler for the entire marker
                 marker.on('click', () => {
-                    window.open(googleMapsUrl, '_blank');
+                    window.open(`https://www.google.com/maps/search/?api=1&query=${city.coords[0]},${city.coords[1]}`, '_blank');
                 });
 
                 return marker;
