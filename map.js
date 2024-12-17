@@ -55,15 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 regionLabels.push(label);
             });
 
-            // Function to create Google Maps URL
-            function createGoogleMapsUrl(coords) {
-                return `https://www.google.com/maps?q=${coords[0]},${coords[1]}`;
-            }
-
-            // Add cities with labels and click handlers
+            // Add cities with labels and Google Maps links
             function createCityMarker(city, isImportant) {
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${city.coords[0]},${city.coords[1]}`;
+                
                 const markerHtml = `
-                    <div class="marker-container" onclick="window.open('${createGoogleMapsUrl(city.coords)}', '_blank')">
+                    <div class="marker-container">
                         <div class="${isImportant ? 'important-city-marker' : 'city-marker'}"></div>
                         <div class="city-label">${city.name}</div>
                     </div>`;
@@ -79,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Add click handler for the entire marker
                 marker.on('click', () => {
-                    window.open(createGoogleMapsUrl(city.coords), '_blank');
+                    window.open(googleMapsUrl, '_blank');
                 });
 
                 return marker;
