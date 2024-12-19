@@ -1,116 +1,188 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize map
-    const map = L.map('map', {
-        center: [24.7136, 46.6753],
-        zoom: 6,
-        minZoom: 5,
-        maxZoom: 10,
-        zoomControl: true,
-        attributionControl: false
-    });
+// إنشاء الخريطة مع تحديد حدود التكبير والتصغير
+const map = L.map('map', {
+    minZoom: 2,
+    maxZoom: 12,
+    zoomControl: false,
+    preferCanvas: true // تحسين الأداء باستخدام Canvas
+}).setView([24.7136, 46.6753], 6);
 
-    // Set map bounds for Saudi Arabia
-    const bounds = L.latLngBounds(
-        [16.3478, 34.4957],  // Southwest corner
-        [32.1543, 55.6666]   // Northeast corner
-    );
-    map.setMaxBounds(bounds);
+// إضافة أزرار التحكم في التكبير في الجانب الأيمن
+L.control.zoom({
+    position: 'topright'
+}).addTo(map);
 
-    // Add custom map tiles without labels
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        maxZoom: 10,
-        minZoom: 5,
-        noWrap: true
-    }).addTo(map);
+// إضافة طبقة الخريطة الأساسية
+const baseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 12,
+    minZoom: 2,
+    attribution: '© Esri',
+    updateWhenIdle: true, // تحديث الخريطة فقط عند التوقف عن التحريك
+    keepBuffer: 2 // تحسين الأداء عند التحريك
+}).addTo(map);
 
-    // Load and process the data
-    fetch('data.json')
-        .then(response => response.json())
-        .then(data => {
-            // Store markers, labels and polygons
-            const cityElements = [];
-            const regionElements = [];
-            const polygons = [];
+// تخزين البيانات في الذاكرة المؤقتة
+let searchResults = [];
+let markers = L.layerGroup();
+let areaLabels = L.layerGroup();
+let pointsLayer = L.layerGroup();
 
-            // Add regions (polygons)
-            data.regions.forEach(region => {
-                const polygon = L.polygon(region.coords, {
-                    color: '#ffffff',
-                    weight: 2,
-                    opacity: 0.8,
-                    fill: false
-                }).addTo(map);
-                
-                const label = L.marker(region.labelCoords, {
-                    icon: L.divIcon({
-                        className: 'region-label',
-                        html: region.name
-                    })
-                }).addTo(map);
+// تحسين أداء البحث
+const searchInput = document.querySelector('.search-input');
+const searchResultsContainer = document.querySelector('.search-results');
+let searchTimeout;
 
-                polygons.push(polygon);
-                regionElements.push(label);
+// تحميل البيانات من ملف JSON
+fetch('data.json')
+    .then(response => response.json())
+    .then(data => {
+        // إنشاء طبقات مختلفة للعناصر
+        const areasLayer = L.layerGroup();
+
+        // إضافة المناطق
+        data.areas.forEach(area => {
+            const polygon = L.polygon(area.coordinates, {
+                color: '#0078A8',
+                weight: 3,
+                fillOpacity: 0,
+                opacity: 0.8,
+                dashArray: '8, 12',
+                smoothFactor: 1.5
+            }).addTo(areasLayer);
+
+            // حساب مركز المضلع بشكل دقيق
+            const bounds = polygon.getBounds();
+            const center = bounds.getCenter();
+            
+            // إنشاء نقطة وسط المنطقة مع تثبيت النص داخل حدود المنطقة
+            const label = L.marker(center, {
+                icon: L.divIcon({
+                    className: 'area-label',
+                    html: `<div style="width: ${Math.min(bounds.getEast() - bounds.getWest(), 200)}px;">${area.name}</div>`,
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 0]
+                })
+            }).addTo(areaLabels);
+
+            // إضافة للبحث
+            searchResults.push({
+                name: area.name,
+                type: 'منطقة',
+                coordinates: center,
+                element: polygon,
+                bounds: bounds
             });
+        });
 
-            // Function to create city marker with label
-            function createCityMarker(city, isImportant) {
-                const markerClass = isImportant ? 'important-city-marker' : 'city-marker';
-                const markerSize = isImportant ? 10 : 8;
-                
-                const marker = L.marker(city.coords, {
-                    icon: L.divIcon({
-                        className: 'marker-container',
-                        html: `
-                            <div class="${markerClass}"></div>
-                            <div class="city-label">${city.name}</div>
-                        `,
-                        iconSize: [100, 40],
-                        iconAnchor: [50, 0]
-                    })
-                }).addTo(map);
-                
-                return marker;
+        // تحسين أداء عرض المدن والمواقع
+        const addPoint = (item, type) => {
+            const point = L.circleMarker(item.coordinates, {
+                radius: type === 'city' ? 6 : 5,
+                fillColor: '#ffffff',
+                color: type === 'city' ? '#000000' : '#ff0000',
+                weight: 2.5,
+                opacity: 1,
+                fillOpacity: 0.9
+            }).addTo(pointsLayer);
+
+            const label = L.marker(item.coordinates, {
+                icon: L.divIcon({
+                    className: 'location-label',
+                    html: `${item.name}<div class="location-info">${type === 'city' ? item.population : 
+                          item.type === 'historical' ? 'موقع تاريخي' : 
+                          item.type === 'religious' ? 'موقع ديني' : 'معلم سياحي'}</div>`,
+                    iconSize: [120, 40],
+                    iconAnchor: [60, -10]
+                })
+            }).addTo(pointsLayer);
+
+            point.bindPopup(`
+                <strong>${item.name}</strong><br>
+                ${type === 'city' ? `عدد السكان: ${item.population}` : 
+                 `النوع: ${item.type === 'historical' ? 'موقع تاريخي' : 
+                          item.type === 'religious' ? 'موقع ديني' : 'معلم سياحي'}`}<br>
+                <a href="${item.url}" target="_blank">عرض في خرائط Google</a>
+            `);
+
+            searchResults.push({
+                name: item.name,
+                type: type === 'city' ? 'مدينة' : 'موقع',
+                coordinates: item.coordinates,
+                element: point
+            });
+        };
+
+        // إضافة المدن والمواقع بشكل مجمع
+        data.cities.forEach(city => addPoint(city, 'city'));
+        data.locations.forEach(location => addPoint(location, 'location'));
+
+        // إضافة الطبقات إلى الخريطة
+        areasLayer.addTo(map);
+        areaLabels.addTo(map);
+        pointsLayer.remove();
+
+        // تحسين أداء تحديث الطبقات
+        const updateLayers = () => {
+            const zoom = map.getZoom();
+            if (zoom >= 8) {
+                if (map.hasLayer(areaLabels)) {
+                    areaLabels.remove();
+                    pointsLayer.addTo(map);
+                }
+            } else {
+                if (map.hasLayer(pointsLayer)) {
+                    pointsLayer.remove();
+                    areaLabels.addTo(map);
+                }
             }
+        };
 
-            // Add cities
-            data.cities.forEach(city => {
-                const marker = createCityMarker(city, false);
-                cityElements.push(marker);
-            });
+        // تحديث الطبقات عند تغيير مستوى التكبير
+        map.on('zoomend', updateLayers);
+        updateLayers();
 
-            // Add important cities
-            data.importantCities.forEach(city => {
-                const marker = createCityMarker(city, true);
-                cityElements.push(marker);
-            });
+        // تحسين أداء البحث
+        searchInput.addEventListener('input', function(e) {
+            clearTimeout(searchTimeout);
+            const searchTerm = e.target.value.trim();
+            
+            searchTimeout = setTimeout(() => {
+                if (searchTerm.length < 2) {
+                    searchResultsContainer.style.display = 'none';
+                    return;
+                }
 
-            // Handle zoom levels for visibility
-            map.on('zoomend', () => {
-                const currentZoom = map.getZoom();
-                
-                // Toggle region elements
-                regionElements.forEach(element => {
-                    if (currentZoom < 7) {
-                        element.getElement().style.display = 'block';
-                    } else {
-                        element.getElement().style.display = 'none';
-                    }
+                const filteredResults = searchResults.filter(item => 
+                    item.name.includes(searchTerm) || 
+                    item.type.includes(searchTerm)
+                ).slice(0, 10); // تحديد عدد النتائج
+
+                searchResultsContainer.innerHTML = '';
+                filteredResults.forEach(result => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.innerHTML = `${result.name} (${result.type})`;
+                    div.addEventListener('click', () => {
+                        if (result.bounds) {
+                            map.fitBounds(result.bounds);
+                        } else {
+                            map.setView(result.coordinates, 9);
+                        }
+                        result.element.openPopup();
+                        searchResultsContainer.style.display = 'none';
+                        searchInput.value = '';
+                    });
+                    searchResultsContainer.appendChild(div);
                 });
 
-                // Toggle city elements
-                cityElements.forEach(element => {
-                    if (currentZoom >= 7) {
-                        element.getElement().style.display = 'block';
-                    } else {
-                        element.getElement().style.display = 'none';
-                    }
-                });
+                searchResultsContainer.style.display = filteredResults.length ? 'block' : 'none';
+            }, 200); // تأخير البحث لتحسين الأداء
+        });
 
-                // Update polygon opacity
-                polygons.forEach(polygon => {
-                    polygon.setStyle({ opacity: currentZoom < 7 ? 0.8 : 0.4 });
-                });
-            });
-        })
-        .catch(error => console.error('Error loading data:', error));
-});
+        // إخفاء نتائج البحث عند النقر خارج القائمة
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                searchResultsContainer.style.display = 'none';
+            }
+        });
+    })
+    .catch(error => console.error('Error loading map data:', error));
